@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Распределение бюджета</title>
+    <!-- Подключаем шрифт Inter для современного вида -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Подключаем Chart.js для красивого графика -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --border-color: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-wrap: wrap;
+            overflow: hidden;
+        }
+
+        /* Левая панель: График и общая сумма */
+        .left-panel {
+            flex: 1;
+            min-width: 320px;
+            padding: 40px;
+            background: #f8fafc;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .total-box {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .total-box label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .total-box input {
+            display: block;
+            width: 100%;
+            text-align: center;
+            font-size: 42px;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--primary);
+            margin-top: 10px;
+            padding: 5px;
+        }
+
+        .remaining-box {
+            font-size: 16px;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: color 0.3s;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            aspect-ratio: 1;
+            margin-top: 20px;
+        }
+
+        .chart-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .chart-center-val {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .chart-center-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Правая панель: Категории */
+        .right-panel {
+            flex: 1.5;
+            min-width: 350px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .categories-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* Элемент категории */
+        .category-item {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .category-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.04);
+            background: white;
+        }
+
+        .cat-top {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .cat-color {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            padding: 0;
+            background: transparent;
+        }
+        .cat-color::-webkit-color-swatch { border: none; border-radius: 50%; }
+        .cat-color::-webkit-color-swatch-wrapper { padding: 0; }
+
+        .cat-name {
+            flex: 1;
+            border: 1px solid transparent;
+            background: transparent;
+            font-size: 16px;
+            font-weight: 600;
+            outline: none;
+            padding: 8px 0;
+            transition: 0.2s;
+        }
+        .cat-name:focus { border-bottom: 1px solid var(--primary); }
+
+        .cat-amount {
+            width: 110px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            outline: none;
+            text-align: right;
+            transition: 0.2s;
+        }
+        .cat-amount:focus { border-color: var(--primary); }
+
+        .cat-delete {
+            background: #fee2e2;
+            color: var(--danger);
+            border: none;
+            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .cat-delete:hover { background: var(--danger); color: white; }
+
+        /* Кастомный ползунок */
+        .cat-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        .cat-slider::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        .cat-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            margin-top: -6px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
+            transition: 0.1s;
+        }
+        .cat-slider::-webkit-slider-thumb:active { transform: scale(1.2); }
+
+        /* Кнопка добавления */
+        .add-btn {
+            background: transparent;
+            color: var(--primary);
+            border: 2px dashed #a5b4fc;
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .add-btn:hover { background: #e0e7ff; border-color: var(--primary); }
+
+        @media (max-width: 768px) {
+            .app-container { flex-direction: column; }
+            .left-panel { border-right: none; border-bottom: 1px solid var(--border-color); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Левая панель с визуализацией -->
+    <div class="left-panel">
+        <div class="total-box">
+            <label>Общая сумма (₽)</label>
+            <input type="number" id="total-input" value="100000" min="0">
+        </div>
+        
+        <div class="remaining-box" id="remaining-box">Остаток: 0 ₽</div>
+
+        <div class="chart-wrapper">
+            <canvas id="myChart"></canvas>
+            <div class="chart-center">
+                <div class="chart-center-val" id="chart-center-val">100 000 ₽</div>
+                <div class="chart-center-label">Всего</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Правая панель с частями -->
+    <div class="right-panel">
+        <div class="panel-title">Распределение по частям</div>
+        <div class="categories-list" id="categories-list">
+            <!-- Элементы будут добавляться сюда через JS -->
+        </div>
+        <button class="add-btn" id="add-btn">
+            <span>+</span> Добавить категорию
+        </button>
+    </div>
+</div>
+
+<script>
+    // Исходные данные
+    let totalAmount = 100000;
+    let categories =[
+        { id: 1, name: 'Жилье', amount: 30000, color: '#818cf8' },
+        { id: 2, name: 'Питание', amount: 20000, color: '#34d399' },
+        { id: 3, name: 'Сбережения', amount: 15000, color: '#f472b6' }
+    ];
+
+    let myChart;
+    const listEl = document.getElementById('categories-list');
+    const totalInput = document.getElementById('total-input');
+    const remBox = document.getElementById('remaining-box');
+    const centerVal = document.getElementById('chart-center-val');
+
+    // Функция генерации красивых цветов
+    function getRandomColor() {
+        const colors =['#f87171', '#fb923c', '#fbbf24', '#a3e635', '#4ade80', '#34d399', '#2dd4bf', '#38bdf8', '#818cf8', '#a78bfa', '#e879f9', '#f472b6'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    // Инициализация графика Chart.js
+    function initChart() {
+        const ctx = document.getElementById('myChart').getContext('2d');
+        myChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: getChartData(),
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%', // Делает кольцо более тонким и современным
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 20, font: { family: 'Inter' } } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.label}: ${context.raw.toLocaleString()} ₽`;
+                            }
+                        }
+                    }
+                },
+                borderWidth: 0,
+                hoverOffset: 5
+            }
+        });
+    }
+
+    // Подготовка данных для графика
+    function getChartData() {
+        const sum = categories.reduce((a, b) => a + b.amount, 0);
+        const remaining = Math.max(0, totalAmount - sum);
+
+        const labels = categories.map(c => c.name || 'Без названия');
+        const data = categories.map(c => c.amount);
+        const bg = categories.map(c => c.color);
+
+        // Если есть остаток, показываем его серым цветом
+        if (remaining > 0) {
+            labels.push('Не распределено');
+            data.push(remaining);
+            bg.push('#e2e8f0');
+        }
+
+        return {
+            labels: labels,
+            datasets:[{
+                data: data,
+                backgroundColor: bg,
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        };
+    }
+
+    // Обновление состояния приложения
+    function updateApp() {
+        totalAmount = Number(totalInput.value) || 0;
+        const sum = categories.reduce((a, b) => a + b.amount, 0);
+        const remaining = totalAmount - sum;
+
+        // Обновляем текст остатка
+        remBox.textContent = `Остаток: ${remaining.toLocaleString()} ₽`;
+        if (remaining < 0) {
+            remBox.style.color = 'var(--danger)';
+            remBox.style.background = '#fee2e2';
+        } else {
+            remBox.style.color = 'var(--success)';
+            remBox.style.background = '#d1fae5';
+        }
+
+        centerVal.textContent = totalAmount.toLocaleString() + ' ₽';
+
+        // Обновляем max у всех ползунков, чтобы можно было тянуть до максимума
+        document.querySelectorAll('.cat-slider').forEach(slider => {
+            slider.max = totalAmount;
+        });
+
+        // Обновляем график
+        const newData = getChartData();
+        myChart.data.labels = newData.labels;
+        myChart.data.datasets[0].data = newData.datasets[0].data;
+        myChart.data.datasets[0].backgroundColor = newData.datasets[0].backgroundColor;
+        myChart.update();
+    }
+
+    // Создание DOM-элемента для категории (чтобы не терялся фокус при вводе)
+    function createCategoryElement(cat) {
+        const div = document.createElement('div');
+        div.className = 'category-item';
+        div.innerHTML = `
+            <div class="cat-top">
+                <input type="color" class="cat-color" value="${cat.color}">
+                <input type="text" class="cat-name" value="${cat.name}" placeholder="Название части">
+                <input type="number" class="cat-amount" value="${cat.amount}" min="0">
+                <button class="cat-delete" title="Удалить">✖</button>
+            </div>
+            <input type="range" class="cat-slider" value="${cat.amount}" min="0" max="${totalAmount}">
+        `;
+
+        const colorIn = div.querySelector('.cat-color');
+        const nameIn = div.querySelector('.cat-name');
+        const amountIn = div.querySelector('.cat-amount');
+        const sliderIn = div.querySelector('.cat-slider');
+        const deleteBtn = div.querySelector('.cat-delete');
+
+        // Обработчики событий с моментальным обновлением
+        colorIn.addEventListener('input', (e) => { cat.color = e.target.value; updateApp(); });
+        nameIn.addEventListener('input', (e) => { cat.name = e.target.value; updateApp(); });
+        
+        // Синхронизация: Числовое поле -> Ползунок
+        amountIn.addEventListener('input', (e) => {
+            let val = Math.max(0, Number(e.target.value));
+            cat.amount = val;
+            sliderIn.value = val;
+            updateApp();
+        });
+
+        // Синхронизация: Ползунок -> Числовое поле
+        sliderIn.addEventListener('input', (e) => {
+            let val = Number(e.target.value);
+            cat.amount = val;
+            amountIn.value = val;
+            updateApp();
+        });
+
+        // Удаление
+        deleteBtn.addEventListener('click', () => {
+            categories = categories.filter(c => c.id !== cat.id);
+            div.remove();
+            updateApp();
+        });
+
+        return div;
+    }
+
+    // Первоначальный рендер
+    function init() {
+        categories.forEach(cat => {
+            listEl.appendChild(createCategoryElement(cat));
+        });
+        
+        initChart();
+        updateApp();
+
+        // Изменение общей суммы
+        totalInput.addEventListener('input', updateApp);
+
+        // Добавление новой категории
+        document.getElementById('add-btn').addEventListener('click', () => {
+            const newCat = { 
+                id: Date.now(), 
+                name: '', 
+                amount: 0, 
+                color: getRandomColor() 
+            };
+            categories.push(newCat);
+            listEl.appendChild(createCategoryElement(newCat));
+            updateApp();
+            
+            // Прокрутка вниз к новому элементу
+            listEl.lastElementChild.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+
+    // Запуск приложения
+    init();
+
+</script>
+</body>
+</html>

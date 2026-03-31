@@ -1,109 +1,182 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Распределение бюджета</title>
-    <!-- Подключаем шрифт Inter для современного вида -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Подключаем Chart.js для красивого графика -->
+    <!-- Шрифт Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
+        /* СВЕТЛАЯ ТЕМА */
         :root {
-            --bg-color: #f1f5f9;
-            --card-bg: #ffffff;
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-panel-left: #f8fafc;
+            --bg-input: #ffffff;
             --text-main: #1e293b;
             --text-muted: #64748b;
             --primary: #6366f1;
             --primary-hover: #4f46e5;
             --border-color: #e2e8f0;
-            --success: #10b981;
-            --danger: #ef4444;
+            --border-focus: #a5b4fc;
+            --danger-bg: #fee2e2;
+            --danger-text: #ef4444;
+            --success-bg: #d1fae5;
+            --success-text: #10b981;
+            --unallocated-bg: #e2e8f0;
+        }
+
+        /* ТЁМНАЯ ТЕМА */
+        [data-theme="dark"] {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-panel-left: #0f172a;
+            --bg-input: #0f172a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #818cf8;
+            --primary-hover: #6366f1;
+            --border-color: #334155;
+            --border-focus: #6366f1;
+            --danger-bg: #450a0a;
+            --danger-text: #f87171;
+            --success-bg: #064e3b;
+            --success-text: #34d399;
+            --unallocated-bg: #334155;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
+            background-color: var(--bg-body);
             color: var(--text-main);
             padding: 40px 20px;
             display: flex;
             justify-content: center;
+            min-height: 100vh;
         }
 
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+        .theme-toggle:hover { transform: scale(1.05); }
+
         .app-container {
-            background: var(--card-bg);
+            position: relative;
+            background: var(--bg-card);
             width: 100%;
-            max-width: 1000px;
+            max-width: 1050px;
             border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
             display: flex;
             flex-wrap: wrap;
             overflow: hidden;
         }
 
-        /* Левая панель: График и общая сумма */
+        /* === ЛЕВАЯ ПАНЕЛЬ === */
         .left-panel {
             flex: 1;
             min-width: 320px;
             padding: 40px;
-            background: #f8fafc;
+            background: var(--bg-panel-left);
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
+        /* Стили выпадающего списка типов диаграмм */
+        .chart-type-select {
+            margin-bottom: 24px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            width: 100%;
+            max-width: 270px;
+            text-align: center;
+        }
+        .chart-type-select:focus { border-color: var(--primary); }
+
         .total-box {
             width: 100%;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
         }
-
         .total-box label {
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
         }
-
         .total-box input {
             display: block;
             width: 100%;
             text-align: center;
-            font-size: 42px;
+            font-size: 48px;
             font-weight: 700;
             border: none;
             background: transparent;
             outline: none;
             color: var(--primary);
-            margin-top: 10px;
-            padding: 5px;
+            margin-top: 8px;
+            padding: 0;
+            font-family: inherit;
         }
 
         .remaining-box {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
-            padding: 10px 20px;
+            padding: 8px 24px;
             border-radius: 20px;
-            background: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            transition: color 0.3s;
+            background: var(--success-bg);
+            color: var(--success-text);
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .chart-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .chart-wrapper {
             position: relative;
             width: 100%;
-            max-width: 300px;
-            aspect-ratio: 1;
-            margin-top: 20px;
+            transition: height 0.3s, max-width 0.3s;
         }
 
         .chart-center {
@@ -113,170 +186,123 @@
             transform: translate(-50%, -50%);
             text-align: center;
             pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .chart-center-val {
             font-size: 24px;
             font-weight: 700;
             color: var(--text-main);
+            line-height: 1.2;
+        }
+        .chart-center-label { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        .custom-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px 20px;
+            margin-top: 30px;
+            width: 100%;
         }
 
-        .chart-center-label {
-            font-size: 12px;
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
             color: var(--text-muted);
+            font-weight: 500;
         }
+        .legend-color { width: 24px; height: 10px; border-radius: 4px; }
 
-        /* Правая панель: Категории */
+        /* === ПРАВАЯ ПАНЕЛЬ === */
         .right-panel {
-            flex: 1.5;
-            min-width: 350px;
+            flex: 1.6;
+            min-width: 380px;
             padding: 40px;
             display: flex;
             flex-direction: column;
         }
 
-        .panel-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
+        .panel-title { font-size: 22px; font-weight: 700; margin-bottom: 24px; color: var(--text-main); }
+        .categories-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
 
-        .categories-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        /* Элемент категории */
         .category-item {
-            background: #f8fafc;
+            background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 16px;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .category-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.04);
-            background: white;
+            padding: 20px;
         }
 
         .cat-top {
             display: flex;
             gap: 12px;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
 
-        .cat-color {
-            width: 36px;
-            height: 36px;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            padding: 0;
-            background: transparent;
-        }
+        .cat-color { width: 36px; height: 36px; border: none; border-radius: 50%; cursor: pointer; padding: 0; background: transparent; flex-shrink: 0; }
         .cat-color::-webkit-color-swatch { border: none; border-radius: 50%; }
         .cat-color::-webkit-color-swatch-wrapper { padding: 0; }
+        .cat-color::-moz-color-swatch { border: none; border-radius: 50%; }
 
-        .cat-name {
-            flex: 1;
-            border: 1px solid transparent;
-            background: transparent;
-            font-size: 16px;
-            font-weight: 600;
-            outline: none;
-            padding: 8px 0;
-            transition: 0.2s;
-        }
-        .cat-name:focus { border-bottom: 1px solid var(--primary); }
-
+        .cat-name { flex: 1; border: none; background: transparent; color: var(--text-main); font-size: 16px; font-weight: 600; outline: none; font-family: inherit; }
         .cat-amount {
-            width: 110px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            outline: none;
-            text-align: right;
-            transition: 0.2s;
+            width: 120px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main);
+            border-radius: 8px; padding: 10px; font-size: 15px; font-weight: 600; outline: none; text-align: center; font-family: inherit;
         }
-        .cat-amount:focus { border-color: var(--primary); }
+        .cat-amount:focus { border-color: var(--border-focus); }
 
         .cat-delete {
-            background: #fee2e2;
-            color: var(--danger);
-            border: none;
-            border-radius: 10px;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
+            background: var(--danger-bg); color: var(--danger-text); border: none; border-radius: 8px;
+            width: 40px; height: 40px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .cat-delete:hover { background: var(--danger); color: white; }
+        .cat-delete:hover { filter: brightness(0.95); }
 
-        /* Кастомный ползунок */
-        .cat-slider {
-            width: 100%;
-            -webkit-appearance: none;
-            background: transparent;
-        }
-        .cat-slider::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 8px;
-            background: var(--border-color);
-            border-radius: 4px;
-        }
-        .cat-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 20px;
-            width: 20px;
-            border-radius: 50%;
-            background: var(--primary);
-            margin-top: -6px;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
-            transition: 0.1s;
-        }
-        .cat-slider::-webkit-slider-thumb:active { transform: scale(1.2); }
+        .cat-slider { width: 100%; -webkit-appearance: none; appearance: none; background: transparent; height: 20px; cursor: pointer; margin: 0; }
+        .cat-slider::-webkit-slider-runnable-track { width: 100%; height: 6px; background: var(--border-color); border-radius: 3px; }
+        .cat-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; height: 18px; width: 18px; border-radius: 50%; background: var(--primary); margin-top: -6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.1s; }
+        .cat-slider::-webkit-slider-thumb:active { transform: scale(1.15); }
+        .cat-slider::-moz-range-track { width: 100%; height: 6px; background: var(--border-color); border-radius: 3px; }
+        .cat-slider::-moz-range-thumb { height: 18px; width: 18px; border-radius: 50%; background: var(--primary); border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.1s; }
+        .cat-slider::-moz-range-thumb:active { transform: scale(1.15); }
 
-        /* Кнопка добавления */
-        .add-btn {
-            background: transparent;
-            color: var(--primary);
-            border: 2px dashed #a5b4fc;
-            border-radius: 16px;
-            padding: 16px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .add-btn:hover { background: #e0e7ff; border-color: var(--primary); }
+        .add-btn { background: transparent; color: var(--primary); border: 2px dashed var(--border-focus); border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; }
+        .add-btn:hover { background: var(--bg-panel-left); }
 
+        /* === АДАПТИВНОСТЬ ДЛЯ МОБИЛОК === */
         @media (max-width: 768px) {
+            body { padding: 20px 10px; }
             .app-container { flex-direction: column; }
-            .left-panel { border-right: none; border-bottom: 1px solid var(--border-color); }
+            .left-panel { border-right: none; border-bottom: 1px solid var(--border-color); padding: 30px 20px; }
+            .right-panel { padding: 30px 20px; min-width: 100%; }
+        }
+
+        @media (max-width: 480px) {
+            /* Перестроение полей категории на очень узких экранах */
+            .cat-top { flex-wrap: wrap; gap: 12px; }
+            .cat-name { width: 100%; flex: none; font-size: 18px; }
+            .cat-amount { flex: 1; width: auto; margin-right: 8px; }
+            .total-box input { font-size: 40px; }
         }
     </style>
 </head>
 <body>
 
+<button class="theme-toggle" id="theme-toggle" title="Переключить тему">🌙</button>
+
 <div class="app-container">
-    <!-- Левая панель с визуализацией -->
     <div class="left-panel">
+        <!-- Выпадающее меню для смены вида диаграммы -->
+        <select id="chart-type-select" class="chart-type-select">
+            <option value="doughnut">🍩 Круговая диаграмма</option>
+            <option value="bar">📊 Один разделенный столбец</option>
+        </select>
+
         <div class="total-box">
             <label>Общая сумма (₽)</label>
             <input type="number" id="total-input" value="100000" min="0">
@@ -284,21 +310,21 @@
         
         <div class="remaining-box" id="remaining-box">Остаток: 0 ₽</div>
 
-        <div class="chart-wrapper">
-            <canvas id="myChart"></canvas>
-            <div class="chart-center">
-                <div class="chart-center-val" id="chart-center-val">100 000 ₽</div>
-                <div class="chart-center-label">Всего</div>
+        <div class="chart-container">
+            <div class="chart-wrapper">
+                <canvas id="myChart"></canvas>
+                <div class="chart-center" id="chart-center">
+                    <div class="chart-center-val" id="chart-center-val">100 000 ₽</div>
+                    <div class="chart-center-label">Всего</div>
+                </div>
             </div>
+            <div id="custom-legend" class="custom-legend"></div>
         </div>
     </div>
 
-    <!-- Правая панель с частями -->
     <div class="right-panel">
         <div class="panel-title">Распределение по частям</div>
-        <div class="categories-list" id="categories-list">
-            <!-- Элементы будут добавляться сюда через JS -->
-        </div>
+        <div class="categories-list" id="categories-list"></div>
         <button class="add-btn" id="add-btn">
             <span>+</span> Добавить категорию
         </button>
@@ -306,120 +332,237 @@
 </div>
 
 <script>
-    // Исходные данные
     let totalAmount = 100000;
     let categories =[
         { id: 1, name: 'Жилье', amount: 30000, color: '#818cf8' },
-        { id: 2, name: 'Питание', amount: 20000, color: '#34d399' },
+        { id: 2, name: 'Питание', amount: 40023, color: '#34d399' },
         { id: 3, name: 'Сбережения', amount: 15000, color: '#f472b6' }
     ];
 
     let myChart;
+    let isAppLoaded = false; 
+
     const listEl = document.getElementById('categories-list');
     const totalInput = document.getElementById('total-input');
     const remBox = document.getElementById('remaining-box');
     const centerVal = document.getElementById('chart-center-val');
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const chartTypeSelect = document.getElementById('chart-type-select');
 
-    // Функция генерации красивых цветов
+    function toggleTheme() {
+        const root = document.documentElement;
+        const isDark = root.getAttribute('data-theme') === 'dark';
+        root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        themeToggleBtn.textContent = isDark ? '🌙' : '☀️';
+        updateApp(); 
+    }
+    themeToggleBtn.addEventListener('click', toggleTheme);
+
+    // Шорткат: Enter на основном поле бюджета переводит фокус на первую категорию
+    totalInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const firstCatName = listEl.querySelector('.cat-name');
+            if (firstCatName) firstCatName.focus();
+        }
+    });
+
+    // Обработчик смены типа графика
+    chartTypeSelect.addEventListener('change', () => {
+        if (myChart) myChart.destroy();
+        isAppLoaded = false; // Для красивой анимации появления нового графика
+        initChart();
+        updateApp();
+        isAppLoaded = true;
+    });
+
     function getRandomColor() {
         const colors =['#f87171', '#fb923c', '#fbbf24', '#a3e635', '#4ade80', '#34d399', '#2dd4bf', '#38bdf8', '#818cf8', '#a78bfa', '#e879f9', '#f472b6'];
         return colors[Math.floor(Math.random() * colors.length)];
     }
 
-    // Инициализация графика Chart.js
     function initChart() {
         const ctx = document.getElementById('myChart').getContext('2d');
-        myChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: getChartData(),
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '75%', // Делает кольцо более тонким и современным
-                plugins: {
-                    legend: { position: 'bottom', labels: { padding: 20, font: { family: 'Inter' } } },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return ` ${context.label}: ${context.raw.toLocaleString()} ₽`;
-                            }
+        const chartType = chartTypeSelect.value;
+        const wrapper = document.querySelector('.chart-wrapper');
+        const centerText = document.getElementById('chart-center');
+
+        // Перестройка интерфейса под тип диаграммы
+        if (chartType === 'doughnut') {
+            wrapper.style.aspectRatio = '1';
+            wrapper.style.height = 'auto';
+            wrapper.style.maxWidth = '270px';
+            centerText.style.display = 'flex';
+        } else {
+            wrapper.style.aspectRatio = 'auto';
+            wrapper.style.height = '60px'; // Фиксированная высота для полосы
+            wrapper.style.maxWidth = '100%';
+            centerText.style.display = 'none';
+        }
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: 0 },
+            plugins: {
+                legend: { display: false }, 
+                tooltip: {
+                    callbacks: {
+                        label: function(context) { 
+                            const label = chartType === 'doughnut' ? context.label : context.dataset.label;
+                            return ` ${label}: ${context.raw.toLocaleString()} ₽`; 
                         }
                     }
-                },
-                borderWidth: 0,
-                hoverOffset: 5
+                }
             }
+        };
+
+        if (chartType === 'doughnut') {
+            options.cutout = '75%';
+            options.hoverOffset = 4;
+        } else {
+            options.indexAxis = 'y'; // Горизонтальный Bar Chart
+            options.scales = {
+                x: { stacked: true, display: false, min: 0 },
+                y: { stacked: true, display: false }
+            };
+        }
+
+        myChart = new Chart(ctx, {
+            type: chartType === 'doughnut' ? 'doughnut' : 'bar',
+            data: getChartData(),
+            options: options
         });
     }
 
-    // Подготовка данных для графика
+    // Подготовка данных. Важно: для разных типов диаграмм нужна разная структура
     function getChartData() {
         const sum = categories.reduce((a, b) => a + b.amount, 0);
         const remaining = Math.max(0, totalAmount - sum);
+        const chartType = chartTypeSelect.value;
+        const unallocatedColor = getComputedStyle(document.documentElement).getPropertyValue('--unallocated-bg').trim();
 
-        const labels = categories.map(c => c.name || 'Без названия');
-        const data = categories.map(c => c.amount);
-        const bg = categories.map(c => c.color);
+        if (chartType === 'doughnut') {
+            const labels = categories.map(c => c.name || 'Без названия');
+            const data = categories.map(c => c.amount);
+            const bg = categories.map(c => c.color);
 
-        // Если есть остаток, показываем его серым цветом
-        if (remaining > 0) {
-            labels.push('Не распределено');
-            data.push(remaining);
-            bg.push('#e2e8f0');
+            if (remaining > 0) {
+                labels.push('Не распределено');
+                data.push(remaining);
+                bg.push(unallocatedColor);
+            }
+
+            return {
+                labels: labels,
+                datasets:[{
+                    data: data,
+                    backgroundColor: bg,
+                    borderWidth: 0 // Убрана обводка — элементы впритык
+                }]
+            };
+        } else {
+            // Для графика "столбца" мы создаем много датасетов для 1 линии
+            const datasets = categories.map(c => ({
+                label: c.name || 'Без названия',
+                data: [c.amount],
+                backgroundColor: c.color,
+                borderWidth: 0, // Убрана обводка
+                barPercentage: 1,
+                categoryPercentage: 1
+            }));
+
+            if (remaining > 0) {
+                datasets.push({
+                    label: 'Не распределено',
+                    data: [remaining],
+                    backgroundColor: unallocatedColor,
+                    borderWidth: 0,
+                    barPercentage: 1,
+                    categoryPercentage: 1
+                });
+            }
+
+            return {
+                labels: [''], // Всего один столбец
+                datasets: datasets
+            };
         }
-
-        return {
-            labels: labels,
-            datasets:[{
-                data: data,
-                backgroundColor: bg,
-                borderWidth: 2,
-                borderColor: '#ffffff'
-            }]
-        };
     }
 
-    // Обновление состояния приложения
+    function generateLegend(data) {
+        const legendEl = document.getElementById('custom-legend');
+        legendEl.innerHTML = '';
+        const chartType = chartTypeSelect.value;
+
+        if (chartType === 'doughnut') {
+            data.labels.forEach((label, i) => {
+                const color = data.datasets[0].backgroundColor[i];
+                const div = document.createElement('div');
+                div.className = 'legend-item';
+                div.innerHTML = `<span class="legend-color" style="background-color: ${color}"></span><span>${label}</span>`;
+                legendEl.appendChild(div);
+            });
+        } else {
+            data.datasets.forEach((dataset) => {
+                const label = dataset.label;
+                const color = dataset.backgroundColor;
+                const div = document.createElement('div');
+                div.className = 'legend-item';
+                div.innerHTML = `<span class="legend-color" style="background-color: ${color}"></span><span>${label}</span>`;
+                legendEl.appendChild(div);
+            });
+        }
+    }
+
     function updateApp() {
         totalAmount = Number(totalInput.value) || 0;
         const sum = categories.reduce((a, b) => a + b.amount, 0);
         const remaining = totalAmount - sum;
 
-        // Обновляем текст остатка
         remBox.textContent = `Остаток: ${remaining.toLocaleString()} ₽`;
         if (remaining < 0) {
-            remBox.style.color = 'var(--danger)';
-            remBox.style.background = '#fee2e2';
+            remBox.style.background = 'var(--danger-bg)';
+            remBox.style.color = 'var(--danger-text)';
         } else {
-            remBox.style.color = 'var(--success)';
-            remBox.style.background = '#d1fae5';
+            remBox.style.background = 'var(--success-bg)';
+            remBox.style.color = 'var(--success-text)';
         }
 
         centerVal.textContent = totalAmount.toLocaleString() + ' ₽';
 
-        // Обновляем max у всех ползунков, чтобы можно было тянуть до максимума
         document.querySelectorAll('.cat-slider').forEach(slider => {
             slider.max = totalAmount;
         });
 
-        // Обновляем график
         const newData = getChartData();
-        myChart.data.labels = newData.labels;
-        myChart.data.datasets[0].data = newData.datasets[0].data;
-        myChart.data.datasets[0].backgroundColor = newData.datasets[0].backgroundColor;
-        myChart.update();
+        
+        // Полностью переназначаем объект данных
+        myChart.data = newData;
+
+        // Если это столбец, нужно контролировать масштаб по оси X
+        if (chartTypeSelect.value === 'bar') {
+            myChart.options.scales.x.max = Math.max(totalAmount, sum);
+        }
+        
+        if (isAppLoaded) {
+            myChart.update('none'); // без анимации при редактировании
+        } else {
+            myChart.update(); // с анимацией при первой загрузке или смене графика
+        }
+        
+        generateLegend(newData);
     }
 
-    // Создание DOM-элемента для категории (чтобы не терялся фокус при вводе)
     function createCategoryElement(cat) {
         const div = document.createElement('div');
         div.className = 'category-item';
         div.innerHTML = `
             <div class="cat-top">
                 <input type="color" class="cat-color" value="${cat.color}">
-                <input type="text" class="cat-name" value="${cat.name}" placeholder="Название части">
+                <input type="text" class="cat-name" value="${cat.name}" placeholder="Название">
                 <input type="number" class="cat-amount" value="${cat.amount}" min="0">
-                <button class="cat-delete" title="Удалить">✖</button>
+                <button class="cat-delete" title="Удалить">✕</button>
             </div>
             <input type="range" class="cat-slider" value="${cat.amount}" min="0" max="${totalAmount}">
         `;
@@ -430,11 +573,20 @@
         const sliderIn = div.querySelector('.cat-slider');
         const deleteBtn = div.querySelector('.cat-delete');
 
-        // Обработчики событий с моментальным обновлением
+        // Логика шортката клавиши Enter
+        const handleEnterKey = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('add-btn').click();
+            }
+        };
+
+        nameIn.addEventListener('keydown', handleEnterKey);
+        amountIn.addEventListener('keydown', handleEnterKey);
+
         colorIn.addEventListener('input', (e) => { cat.color = e.target.value; updateApp(); });
         nameIn.addEventListener('input', (e) => { cat.name = e.target.value; updateApp(); });
         
-        // Синхронизация: Числовое поле -> Ползунок
         amountIn.addEventListener('input', (e) => {
             let val = Math.max(0, Number(e.target.value));
             cat.amount = val;
@@ -442,7 +594,6 @@
             updateApp();
         });
 
-        // Синхронизация: Ползунок -> Числовое поле
         sliderIn.addEventListener('input', (e) => {
             let val = Number(e.target.value);
             cat.amount = val;
@@ -450,7 +601,6 @@
             updateApp();
         });
 
-        // Удаление
         deleteBtn.addEventListener('click', () => {
             categories = categories.filter(c => c.id !== cat.id);
             div.remove();
@@ -460,38 +610,29 @@
         return div;
     }
 
-    // Первоначальный рендер
     function init() {
-        categories.forEach(cat => {
-            listEl.appendChild(createCategoryElement(cat));
-        });
-        
+        categories.forEach(cat => listEl.appendChild(createCategoryElement(cat)));
         initChart();
         updateApp();
-
-        // Изменение общей суммы
+        isAppLoaded = true;
+        
         totalInput.addEventListener('input', updateApp);
 
-        // Добавление новой категории
         document.getElementById('add-btn').addEventListener('click', () => {
-            const newCat = { 
-                id: Date.now(), 
-                name: '', 
-                amount: 0, 
-                color: getRandomColor() 
-            };
+            const newCat = { id: Date.now(), name: '', amount: 0, color: getRandomColor() };
             categories.push(newCat);
-            listEl.appendChild(createCategoryElement(newCat));
+            const newElement = createCategoryElement(newCat);
+            listEl.appendChild(newElement);
             updateApp();
             
-            // Прокрутка вниз к новому элементу
-            listEl.lastElementChild.scrollIntoView({ behavior: 'smooth' });
+            newElement.scrollIntoView({ behavior: 'smooth' });
+            
+            // Сразу фокусируем курсор на названии новой категории
+            newElement.querySelector('.cat-name').focus();
         });
     }
 
-    // Запуск приложения
     init();
-
 </script>
 </body>
 </html>

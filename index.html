@@ -109,7 +109,6 @@
             align-items: center;
         }
 
-        /* Стили выпадающего списка типов диаграмм */
         .chart-type-select {
             margin-bottom: 24px;
             padding: 10px 16px;
@@ -283,7 +282,6 @@
         }
 
         @media (max-width: 480px) {
-            /* Перестроение полей категории на очень узких экранах */
             .cat-top { flex-wrap: wrap; gap: 12px; }
             .cat-name { width: 100%; flex: none; font-size: 18px; }
             .cat-amount { flex: 1; width: auto; margin-right: 8px; }
@@ -297,7 +295,6 @@
 
 <div class="app-container">
     <div class="left-panel">
-        <!-- Выпадающее меню для смены вида диаграммы -->
         <select id="chart-type-select" class="chart-type-select">
             <option value="doughnut">🍩 Круговая диаграмма</option>
             <option value="bar">📊 Один разделенный столбец</option>
@@ -333,7 +330,7 @@
 
 <script>
     let totalAmount = 100000;
-    let categories =[
+    let categories = [
         { id: 1, name: 'Жилье', amount: 30000, color: '#818cf8' },
         { id: 2, name: 'Питание', amount: 40023, color: '#34d399' },
         { id: 3, name: 'Сбережения', amount: 15000, color: '#f472b6' }
@@ -349,6 +346,58 @@
     const themeToggleBtn = document.getElementById('theme-toggle');
     const chartTypeSelect = document.getElementById('chart-type-select');
 
+    // === СОХРАНЕНИЕ И ЗАГРУЗКА ИЗ URL ===
+    function saveStateToURL() {
+        const state = {
+            t: Number(totalInput.value),
+            c: chartTypeSelect.value,
+            items: categories.map(cat => ({
+                n: cat.name,
+                a: cat.amount,
+                col: cat.color
+            }))
+        };
+        
+        // Переводим в строку, кодируем спецсимволы (кириллицу) и затем в Base64
+        const jsonStr = JSON.stringify(state);
+        const encoded = btoa(encodeURIComponent(jsonStr));
+        
+        // Используем replaceState, чтобы не засорять историю браузера кнопкой "Назад"
+        window.history.replaceState(null, null, '#' + encoded);
+    }
+
+    function loadStateFromURL() {
+        const hash = window.location.hash.substring(1);
+        if (!hash) return false;
+
+        try {
+            // Декодируем из Base64 и парсим строку
+            const decoded = decodeURIComponent(atob(hash));
+            const state = JSON.parse(decoded);
+
+            if (state.t !== undefined) {
+                totalAmount = state.t;
+                totalInput.value = state.t;
+            }
+            if (state.c) {
+                chartTypeSelect.value = state.c;
+            }
+            if (state.items && Array.isArray(state.items)) {
+                categories = state.items.map((item, index) => ({
+                    id: Date.now() + index, // генерируем новые ID
+                    name: item.n || '',
+                    amount: Number(item.a) || 0,
+                    color: item.col || '#000000'
+                }));
+            }
+            return true;
+        } catch (e) {
+            console.error("Не удалось прочитать данные из URL", e);
+            return false;
+        }
+    }
+    // =====================================
+
     function toggleTheme() {
         const root = document.documentElement;
         const isDark = root.getAttribute('data-theme') === 'dark';
@@ -358,7 +407,6 @@
     }
     themeToggleBtn.addEventListener('click', toggleTheme);
 
-    // Шорткат: Enter на основном поле бюджета переводит фокус на первую категорию
     totalInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -367,17 +415,16 @@
         }
     });
 
-    // Обработчик смены типа графика
     chartTypeSelect.addEventListener('change', () => {
         if (myChart) myChart.destroy();
-        isAppLoaded = false; // Для красивой анимации появления нового графика
+        isAppLoaded = false; 
         initChart();
         updateApp();
         isAppLoaded = true;
     });
 
     function getRandomColor() {
-        const colors =['#f87171', '#fb923c', '#fbbf24', '#a3e635', '#4ade80', '#34d399', '#2dd4bf', '#38bdf8', '#818cf8', '#a78bfa', '#e879f9', '#f472b6'];
+        const colors = ['#f87171', '#fb923c', '#fbbf24', '#a3e635', '#4ade80', '#34d399', '#2dd4bf', '#38bdf8', '#818cf8', '#a78bfa', '#e879f9', '#f472b6'];
         return colors[Math.floor(Math.random() * colors.length)];
     }
 
@@ -387,7 +434,6 @@
         const wrapper = document.querySelector('.chart-wrapper');
         const centerText = document.getElementById('chart-center');
 
-        // Перестройка интерфейса под тип диаграммы
         if (chartType === 'doughnut') {
             wrapper.style.aspectRatio = '1';
             wrapper.style.height = 'auto';
@@ -395,7 +441,7 @@
             centerText.style.display = 'flex';
         } else {
             wrapper.style.aspectRatio = 'auto';
-            wrapper.style.height = '60px'; // Фиксированная высота для полосы
+            wrapper.style.height = '60px'; 
             wrapper.style.maxWidth = '100%';
             centerText.style.display = 'none';
         }
@@ -421,7 +467,7 @@
             options.cutout = '75%';
             options.hoverOffset = 4;
         } else {
-            options.indexAxis = 'y'; // Горизонтальный Bar Chart
+            options.indexAxis = 'y'; 
             options.scales = {
                 x: { stacked: true, display: false, min: 0 },
                 y: { stacked: true, display: false }
@@ -435,7 +481,6 @@
         });
     }
 
-    // Подготовка данных. Важно: для разных типов диаграмм нужна разная структура
     function getChartData() {
         const sum = categories.reduce((a, b) => a + b.amount, 0);
         const remaining = Math.max(0, totalAmount - sum);
@@ -455,19 +500,18 @@
 
             return {
                 labels: labels,
-                datasets:[{
+                datasets: [{
                     data: data,
                     backgroundColor: bg,
-                    borderWidth: 0 // Убрана обводка — элементы впритык
+                    borderWidth: 0 
                 }]
             };
         } else {
-            // Для графика "столбца" мы создаем много датасетов для 1 линии
             const datasets = categories.map(c => ({
                 label: c.name || 'Без названия',
                 data: [c.amount],
                 backgroundColor: c.color,
-                borderWidth: 0, // Убрана обводка
+                borderWidth: 0, 
                 barPercentage: 1,
                 categoryPercentage: 1
             }));
@@ -484,7 +528,7 @@
             }
 
             return {
-                labels: [''], // Всего один столбец
+                labels: [''], 
                 datasets: datasets
             };
         }
@@ -537,21 +581,24 @@
 
         const newData = getChartData();
         
-        // Полностью переназначаем объект данных
         myChart.data = newData;
 
-        // Если это столбец, нужно контролировать масштаб по оси X
         if (chartTypeSelect.value === 'bar') {
             myChart.options.scales.x.max = Math.max(totalAmount, sum);
         }
         
         if (isAppLoaded) {
-            myChart.update('none'); // без анимации при редактировании
+            myChart.update('none'); 
         } else {
-            myChart.update(); // с анимацией при первой загрузке или смене графика
+            myChart.update(); 
         }
         
         generateLegend(newData);
+
+        // Сохраняем состояние в URL при любом обновлении
+        if (isAppLoaded) {
+            saveStateToURL();
+        }
     }
 
     function createCategoryElement(cat) {
@@ -573,7 +620,6 @@
         const sliderIn = div.querySelector('.cat-slider');
         const deleteBtn = div.querySelector('.cat-delete');
 
-        // Логика шортката клавиши Enter
         const handleEnterKey = (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -611,10 +657,16 @@
     }
 
     function init() {
+        // Пробуем загрузить данные из URL перед отрисовкой
+        loadStateFromURL();
+
         categories.forEach(cat => listEl.appendChild(createCategoryElement(cat)));
         initChart();
         updateApp();
         isAppLoaded = true;
+        
+        // Однократное первоначальное сохранение (если ссылка была пустой)
+        saveStateToURL();
         
         totalInput.addEventListener('input', updateApp);
 
@@ -626,8 +678,6 @@
             updateApp();
             
             newElement.scrollIntoView({ behavior: 'smooth' });
-            
-            // Сразу фокусируем курсор на названии новой категории
             newElement.querySelector('.cat-name').focus();
         });
     }

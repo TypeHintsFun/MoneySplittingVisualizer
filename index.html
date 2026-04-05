@@ -108,7 +108,6 @@
         }
         .copy-link-btn:hover { transform: scale(1.02); background: var(--bg-panel-left); }
         .copy-link-btn.copied { background: var(--success-bg); color: var(--success-text); border-color: var(--success-text); }
-
         .app-container {
             position: relative;
             background: var(--bg-card);
@@ -463,7 +462,6 @@
     const copyLinkBtn = document.getElementById('copy-link-btn');
     copyLinkBtn.addEventListener('click', copyLinkToClipboard);
     // =====================================
-
     totalInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();

@@ -129,8 +129,10 @@ function initChart() {
 function getChartData() {
     const sum = window.categories.reduce((a, b) => a + b.amount, 0);
     const remaining = Math.max(0, window.totalAmount - sum);
+    const deficit = Math.max(0, sum - window.totalAmount);
     const chartType = document.getElementById('chart-type-select').value;
     const unallocatedColor = getComputedStyle(document.documentElement).getPropertyValue('--unallocated-bg').trim();
+    const deficitColor = getComputedStyle(document.documentElement).getPropertyValue('--danger-text').trim();
 
     // START_BLOCK_PREPARE_DATA: [Формирование структуры данных по типу]
     if (chartType === 'doughnut') {
@@ -142,6 +144,12 @@ function getChartData() {
             labels.push('Не распределено');
             data.push(remaining);
             bg.push(unallocatedColor);
+        }
+
+        if (deficit > 0) {
+            labels.push('Дефицит');
+            data.push(deficit);
+            bg.push(deficitColor);
         }
 
         return {
@@ -167,6 +175,17 @@ function getChartData() {
                 label: 'Не распределено',
                 data: [remaining],
                 backgroundColor: unallocatedColor,
+                borderWidth: 0,
+                barPercentage: 1,
+                categoryPercentage: 1
+            });
+        }
+
+        if (deficit > 0) {
+            datasets.push({
+                label: 'Дефицит',
+                data: [deficit],
+                backgroundColor: deficitColor,
                 borderWidth: 0,
                 barPercentage: 1,
                 categoryPercentage: 1
@@ -224,7 +243,8 @@ function updateApp() {
     window.myChart.data = newData;
 
     if (chartTypeSelect.value === 'bar') {
-        window.myChart.options.scales.x.max = Math.max(window.totalAmount, sum);
+        const totalOfData = newData.datasets.reduce((acc, ds) => acc + ds.data[0], 0);
+        window.myChart.options.scales.x.max = Math.max(window.totalAmount, totalOfData);
     }
     
     if (window.isAppLoaded) {

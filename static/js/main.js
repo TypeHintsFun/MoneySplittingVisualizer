@@ -12,7 +12,8 @@
 
 /**
  * START_CHANGE_SUMMARY:
- * LAST_CHANGE: [v1.0.0 - Инициализация приложения, объединение всех функциональных модулей.]
+ * LAST_CHANGE: [v1.1.0 - Инициализация профилей и тем при старте. Добавление управления профилями в DOM.]
+ * PREV_CHANGE_SUMMARY: [v1.0.0 - Инициализация приложения, объединение всех функциональных модулей.]
  * END_CHANGE_SUMMARY
  */
 
@@ -34,9 +35,15 @@
 function init() {
     console.log("[Main][IMP:9][init][START_BOOTSTRAP] Инициализация приложения начата [INFO]");
     
-    // START_BLOCK_STATE_LOAD: [Загрузка данных]
-    if (window.loadStateFromURL) {
-        window.loadStateFromURL();
+    // START_BLOCK_THEME_INIT: [Инициализация темы]
+    if (window.applyStoredTheme) {
+        window.applyStoredTheme();
+    }
+    // END_BLOCK_THEME_INIT
+
+    // START_BLOCK_STATE_LOAD: [Загрузка профилей и данных]
+    if (window.initProfiles) {
+        window.initProfiles();
     }
     // END_BLOCK_STATE_LOAD
 
@@ -44,6 +51,9 @@ function init() {
     const listEl = document.getElementById('categories-list');
     if (window.createCategoryElement) {
         window.categories.forEach(cat => listEl.appendChild(window.createCategoryElement(cat)));
+    }
+    if (window.renderProfileSelector) {
+        window.renderProfileSelector();
     }
     // END_BLOCK_UI_INIT
 
@@ -56,11 +66,6 @@ function init() {
     }
     window.isAppLoaded = true;
     console.log("[Main][IMP:9][init][APP_LOADED] Флаг загрузки приложения установлен в true [SUCCESS]");
-    
-    // Однократное первоначальное сохранение
-    if (window.saveStateToURL) {
-        window.saveStateToURL();
-    }
     // END_BLOCK_CHART_BOOT
 
     // START_BLOCK_EVENT_LISTENERS: [Регистрация глобальных слушателей событий]

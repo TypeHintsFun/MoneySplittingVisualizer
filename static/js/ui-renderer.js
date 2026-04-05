@@ -10,18 +10,78 @@
  * END_MODULE_CONTRACT
  */
 
-/**
- * START_CHANGE_SUMMARY:
- * LAST_CHANGE: [v1.0.0 - Извлечение логики отрисовки категорий и легенды из index.html.]
- * END_CHANGE_SUMMARY
- */
+// START_CHANGE_SUMMARY:
+// LAST_CHANGE: [v1.1.0 - Добавление функции renderProfileSelector для управления профилями в UI.]
+// PREV_CHANGE_SUMMARY: [v1.0.0 - Извлечение логики отрисовки категорий и легенды из index.html.]
+// END_CHANGE_SUMMARY
 
-/**
- * START_MODULE_MAP:
- * FUNC [9][Создание элемента категории] => createCategoryElement
- * FUNC [8][Генерация легенды чарта] => generateLegend
- * END_MODULE_MAP
- */
+// START_MODULE_MAP:
+// FUNC [9][Создание элемента категории] => createCategoryElement
+// FUNC [8][Генерация легенды чарта] => generateLegend
+// FUNC [8][Отрисовка списка профилей] => renderProfileSelector
+// END_MODULE_MAP
+
+// START_FUNCTION_renderProfileSelector
+// START_CONTRACT:
+// PURPOSE: Заполняет выпадающий список профилей и навешивает обработчики на кнопки управления.
+// INPUTS: None
+// OUTPUTS: None
+// SIDE_EFFECTS: Обновляет #profile-select, навешивает слушатели на кнопки ➕ и ✏️.
+// END_CONTRACT
+function renderProfileSelector() {
+    const select = document.getElementById('profile-select');
+    const addBtn = document.getElementById('add-profile-btn');
+    const renameBtn = document.getElementById('rename-profile-btn');
+    const deleteBtn = document.getElementById('delete-profile-btn');
+    if (!select) return;
+
+    // START_BLOCK_FILL_SELECT: [Заполнение опций]
+    select.innerHTML = '';
+    window.profiles.forEach(profile => {
+        const option = document.createElement('option');
+        option.value = profile.id;
+        option.textContent = profile.name;
+        option.selected = profile.id === window.currentProfileId;
+        select.appendChild(option);
+    });
+    // END_BLOCK_FILL_SELECT
+
+    // START_BLOCK_EVENT_HANDLERS: [Обработчики управления профилями]
+    select.onchange = (e) => window.switchProfile(e.target.value);
+    
+    addBtn.onclick = () => {
+        const name = prompt('Введите название нового профиля:', `План ${window.profiles.length + 1}`);
+        if (name) {
+            const newProf = window.createProfile(name);
+            window.switchProfile(newProf.id);
+        }
+    };
+
+    renameBtn.onclick = () => {
+        const currentProf = window.profiles.find(p => p.id === window.currentProfileId);
+        if (!currentProf) return;
+        const newName = prompt('Переименовать профиль:', currentProf.name);
+        if (newName && newName !== currentProf.name) {
+            currentProf.name = newName;
+            window.StorageManager.saveProfiles(window.profiles);
+            renderProfileSelector();
+        }
+    };
+
+    deleteBtn.onclick = () => {
+        if (window.profiles.length <= 1) {
+            alert('Нельзя удалить единственный профиль!');
+            return;
+        }
+        if (confirm(`Вы действительно хотите удалить профиль "${window.profiles.find(p => p.id === window.currentProfileId).name}"?`)) {
+            window.profiles = window.profiles.filter(p => p.id !== window.currentProfileId);
+            window.StorageManager.saveProfiles(window.profiles);
+            window.switchProfile(window.profiles[0].id);
+        }
+    };
+    // END_BLOCK_EVENT_HANDLERS
+}
+// END_FUNCTION_renderProfileSelector
 
 // START_FUNCTION_createCategoryElement
 /**
@@ -136,3 +196,4 @@ function generateLegend(data) {
 
 window.createCategoryElement = createCategoryElement;
 window.generateLegend = generateLegend;
+window.renderProfileSelector = renderProfileSelector;

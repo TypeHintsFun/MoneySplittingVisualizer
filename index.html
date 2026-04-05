@@ -1,3 +1,8 @@
+<!-- 
+  ПРОЕКТ: FinancesPlanning (Serverless)
+  Размещено на: GitHub Pages
+  Хранилище: LocalStorage (Профили и Темы)
+-->
 <!DOCTYPE html>
 <html lang="ru" data-theme="light">
 <head>
@@ -13,11 +18,21 @@
 </head>
 <body>
 
-<button class="theme-toggle" id="theme-toggle" title="Переключить тему">🌙</button>
-<button class="copy-link-btn" id="copy-link-btn" title="Скопировать ссылку">
-    <span>🔗</span>
-    <span id="copy-link-text">Скопировать ссылку</span>
-</button>
+<div class="header-controls">
+    <div class="profile-manager">
+        <select id="profile-select" class="profile-select" title="Выберите профиль"></select>
+        <button id="add-profile-btn" class="icon-btn" title="Создать новый профиль">➕</button>
+        <button id="rename-profile-btn" class="icon-btn" title="Переименовать профиль">✏️</button>
+        <button id="delete-profile-btn" class="icon-btn danger-btn" title="Удалить текущий профиль">🗑️</button>
+    </div>
+    <div class="action-buttons">
+        <button class="theme-toggle" id="theme-toggle" title="Переключить тему">🌙</button>
+        <button class="copy-link-btn" id="copy-link-btn" title="Скопировать ссылку для шеринга">
+            <span>🔗</span>
+            <span id="copy-link-text">Поделиться</span>
+        </button>
+    </div>
+</div>
 
 <div class="app-container">
     <div class="left-panel">
@@ -55,6 +70,7 @@
 </div>
 
 <!-- Скрипты приложения -->
+<script src="static/js/storage-manager.js"></script>
 <script src="static/js/state.js"></script>
 <script src="static/js/chart-engine.js"></script>
 <script src="static/js/ui-renderer.js"></script>

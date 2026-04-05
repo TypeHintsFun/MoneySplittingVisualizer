@@ -10,36 +10,59 @@
  * END_MODULE_CONTRACT
  */
 
-/**
- * START_CHANGE_SUMMARY:
- * LAST_CHANGE: [v1.0.0 - Извлечение логики тем и буфера обмена из index.html.]
- * END_CHANGE_SUMMARY
- */
+// START_CHANGE_SUMMARY:
+// LAST_CHANGE: [v1.0.1 - Подключение StorageManager для сохранения темы и автоматического определения предпочтений браузера.]
+// PREV_CHANGE_SUMMARY: [v1.0.0 - Извлечение логики тем и буфера обмена из index.html.]
+// END_CHANGE_SUMMARY
 
-/**
- * START_MODULE_MAP:
- * FUNC [8][Переключение темы] => toggleTheme
- * FUNC [9][Копирование ссылки в буфер] => copyLinkToClipboard
- * END_MODULE_MAP
- */
+// START_MODULE_MAP:
+// FUNC [8][Переключение темы] => toggleTheme
+// FUNC [8][Применение темы при загрузке] => applyStoredTheme
+// FUNC [9][Копирование ссылки в буфер] => copyLinkToClipboard
+// END_MODULE_MAP
+
+// START_FUNCTION_applyStoredTheme
+// START_CONTRACT:
+// PURPOSE: Применяет тему из LocalStorage или браузерных настроек при инициализации.
+// INPUTS: None
+// OUTPUTS: None
+// SIDE_EFFECTS: Изменяет data-theme на <html>, обновляет текст #theme-toggle.
+// END_CONTRACT
+function applyStoredTheme() {
+    const root = document.documentElement;
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const theme = window.StorageManager.getTheme();
+    
+    // START_BLOCK_APPLY_THEME: [Применение темы]
+    root.setAttribute('data-theme', theme);
+    if (themeToggleBtn) {
+        themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+    console.log(`[Theme][IMP:8][applyStoredTheme] Тема '${theme}' применена. [SUCCESS]`);
+    // END_BLOCK_APPLY_THEME
+}
+// END_FUNCTION_applyStoredTheme
 
 // START_FUNCTION_toggleTheme
 /**
  * START_CONTRACT:
- * PURPOSE: Переключает тему между 'light' и 'dark'. Обновляет иконку кнопки.
+ * PURPOSE: Переключает тему между 'light' и 'dark'. Обновляет иконку кнопки и сохраняет в LocalStorage.
  * INPUTS: None
  * OUTPUTS: None
- * SIDE_EFFECTS: Изменяет data-theme на <html>, обновляет текст #theme-toggle.
+ * SIDE_EFFECTS: Изменяет data-theme на <html>, обновляет текст #theme-toggle, пишет в LocalStorage.
  * END_CONTRACT
  */
 function toggleTheme() {
     const root = document.documentElement;
     const themeToggleBtn = document.getElementById('theme-toggle');
-    const isDark = root.getAttribute('data-theme') === 'dark';
+    const currentTheme = root.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     
-    // START_BLOCK_UPDATE_THEME: [Переключение атрибута]
-    root.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    themeToggleBtn.textContent = isDark ? '🌙' : '☀️';
+    // START_BLOCK_UPDATE_THEME: [Переключение атрибута и сохранение]
+    root.setAttribute('data-theme', newTheme);
+    themeToggleBtn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+    window.StorageManager.setTheme(newTheme);
+    console.log(`[Theme][IMP:9][toggleTheme] Тема переключена на '${newTheme}' и сохранена. [SUCCESS]`);
     // END_BLOCK_UPDATE_THEME
     
     // START_BLOCK_SYNC_CHART: [Синхронизация цветов чарта]
@@ -60,7 +83,15 @@ function toggleTheme() {
 function copyLinkToClipboard() {
     const copyBtn = document.getElementById('copy-link-btn');
     const copyText = document.getElementById('copy-link-text');
+    
+    // START_BLOCK_GENERATE_STATEFUL_URL: [Генерация URL с актуальным состоянием]
+    // Если в URL нет хэша или он не актуален, нам нужно сгенерировать ссылку из текущего состояния.
+    // Т.к. мы теперь храним данные в LocalStorage, нам нужно явно вызвать сериализацию в URL перед копированием.
+    if (window.saveStateToURL) {
+        window.saveStateToURL();
+    }
     const currentURL = window.location.href;
+    // END_BLOCK_GENERATE_STATEFUL_URL
     
     // START_BLOCK_COPY_PROCESS: [Операция копирования]
     console.log(`[Theme][IMP:7][copyLinkToClipboard][START_COPY] Инициация копирования ссылки: ${currentURL.length} chars`);
@@ -86,4 +117,5 @@ function copyLinkToClipboard() {
 // END_FUNCTION_copyLinkToClipboard
 
 window.toggleTheme = toggleTheme;
+window.applyStoredTheme = applyStoredTheme;
 window.copyLinkToClipboard = copyLinkToClipboard;

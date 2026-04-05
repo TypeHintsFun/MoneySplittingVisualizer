@@ -84,19 +84,19 @@ function copyLinkToClipboard() {
     const copyBtn = document.getElementById('copy-link-btn');
     const copyText = document.getElementById('copy-link-text');
     
-    // START_BLOCK_GENERATE_STATEFUL_URL: [Генерация URL с актуальным состоянием]
-    // Если в URL нет хэша или он не актуален, нам нужно сгенерировать ссылку из текущего состояния.
-    // Т.к. мы теперь храним данные в LocalStorage, нам нужно явно вызвать сериализацию в URL перед копированием.
-    if (window.saveStateToURL) {
-        window.saveStateToURL();
+    // START_BLOCK_GENERATE_STATEFUL_URL: [Генерация URL с актуальным состоянием без изменения адресной строки]
+    // Мы генерируем хэш состояния и добавляем его к базовому URL вручную для копирования.
+    // Это позволяет поделиться актуальными данными, не "загрязняя" адресную строку пользователя.
+    let shareURL = window.location.origin + window.location.pathname + window.location.search;
+    if (window.getStateAsURLHash) {
+        shareURL += window.getStateAsURLHash();
     }
-    const currentURL = window.location.href;
     // END_BLOCK_GENERATE_STATEFUL_URL
     
     // START_BLOCK_COPY_PROCESS: [Операция копирования]
-    console.log(`[Theme][IMP:7][copyLinkToClipboard][START_COPY] Инициация копирования ссылки: ${currentURL.length} chars`);
+    console.log(`[Theme][IMP:7][copyLinkToClipboard][START_COPY] Инициация копирования ссылки: ${shareURL.length} chars`);
     
-    navigator.clipboard.writeText(currentURL).then(() => {
+    navigator.clipboard.writeText(shareURL).then(() => {
         // START_BLOCK_UI_FEEDBACK: [Индикация успеха]
         copyBtn.classList.add('copied');
         copyText.textContent = 'Скопировано!';
@@ -104,7 +104,7 @@ function copyLinkToClipboard() {
         
         setTimeout(() => {
             copyBtn.classList.remove('copied');
-            copyText.textContent = 'Скопировать ссылку';
+            copyText.textContent = 'Поделиться';
             console.log(`[Theme][IMP:6][copyLinkToClipboard][RESET] Статус кнопки сброшен`);
         }, 2000);
         // END_BLOCK_UI_FEEDBACK

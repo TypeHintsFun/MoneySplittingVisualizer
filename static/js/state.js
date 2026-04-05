@@ -183,16 +183,16 @@ function switchProfile(id) {
 }
 // END_FUNCTION_switchProfile
 
-// START_FUNCTION_saveStateToURL
+// START_FUNCTION_getStateAsURLHash
 /**
  * START_CONTRACT:
- * PURPOSE: Сериализует текущее состояние в JSON, кодирует в Base64 и сохраняет в URL hash.
+ * PURPOSE: Сериализует текущее состояние в JSON, кодирует в Base64 для использования в URL hash.
  * INPUTS: None (использует глобальные переменные и DOM элементы)
- * OUTPUTS: None
- * SIDE_EFFECTS: Изменяет window.location.hash
+ * OUTPUTS: 
+ * - string - Закодированный хэш состояния
  * END_CONTRACT
  */
-function saveStateToURL() {
+function getStateAsURLHash() {
     const totalInput = document.getElementById('total-input');
     const chartTypeSelect = document.getElementById('chart-type-select');
     
@@ -213,9 +213,26 @@ function saveStateToURL() {
     const encoded = btoa(encodeURIComponent(jsonStr));
     // END_BLOCK_ENCODE
     
+    console.log(`[State][IMP:7][getStateAsURLHash][GENERATE] Хэш состояния сгенерирован. [SUCCESS]`);
+    return '#' + encoded;
+}
+// END_FUNCTION_getStateAsURLHash
+
+// START_FUNCTION_saveStateToURL
+/**
+ * START_CONTRACT:
+ * PURPOSE: Обновляет хэш в URL текущей страницы.
+ * INPUTS: None
+ * OUTPUTS: None
+ * SIDE_EFFECTS: Изменяет window.location.hash
+ * END_CONTRACT
+ */
+function saveStateToURL() {
+    const hash = getStateAsURLHash();
+    
     // START_BLOCK_UPDATE_URL: [Обновление хэша URL]
-    window.history.replaceState(null, null, '#' + encoded);
-    console.log(`[State][IMP:7][saveStateToURL][UPDATE_URL] Состояние сериализовано в URL. [SUCCESS]`);
+    window.history.replaceState(null, null, hash);
+    console.log(`[State][IMP:7][saveStateToURL][UPDATE_URL] Состояние сохранено в адресную строку. [SUCCESS]`);
     // END_BLOCK_UPDATE_URL
 }
 // END_FUNCTION_saveStateToURL
@@ -244,6 +261,7 @@ function loadStateFromURL() {
 // END_FUNCTION_loadStateFromURL
 
 window.saveStateToURL = saveStateToURL;
+window.getStateAsURLHash = getStateAsURLHash;
 window.loadStateFromURL = loadStateFromURL;
 window.initProfiles = initProfiles;
 window.saveCurrentProfile = saveCurrentProfile;

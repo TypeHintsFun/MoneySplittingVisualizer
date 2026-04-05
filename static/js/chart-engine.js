@@ -258,9 +258,9 @@ function updateApp() {
     if (window.generateLegend) window.generateLegend(newData);
     // END_BLOCK_LEGEND
 
-    // START_BLOCK_PERSISTENCE: [Сохранение в URL]
-    if (window.isAppLoaded && window.saveStateToURL) {
-        window.saveStateToURL();
+    // START_BLOCK_PERSISTENCE: [Сохранение состояния в профиль (LocalStorage)]
+    if (window.isAppLoaded && window.saveCurrentProfile) {
+        window.saveCurrentProfile();
     }
     // END_BLOCK_PERSISTENCE
 }

@@ -116,19 +116,58 @@ function setupCustomNumberInput(input, onUpdate) {
     const minusBtn = container.querySelector('.minus-btn');
     const plusBtn = container.querySelector('.plus-btn');
 
-    const stepAttr = input.getAttribute('step');
-    const step = stepAttr ? Number(stepAttr) : 1000;
+    let timer = null;
+    let repeatTimer = null;
+    let currentStep = 100;
+    let ticks = 0;
 
-    minusBtn.onclick = (e) => {
-        e.preventDefault();
-        input.value = Math.max(0, Number(input.value) - step);
-        onUpdate();
+    const startChange = (direction) => {
+        stopChange(); // На всякий случай сбрасываем предыдущий
+        
+        const update = () => {
+            const val = Number(input.value) || 0;
+            input.value = direction > 0 ? val + currentStep : Math.max(0, val - currentStep);
+            onUpdate();
+            
+            ticks++;
+            // Увеличиваем шаг каждые 3 тика после начальной задержки
+            if (ticks > 5 && ticks % 3 === 0) {
+                currentStep = Math.min(currentStep * 1.5, 100000); // Ограничим макс. шаг 100к
+                currentStep = Math.round(currentStep / 100) * 100;
+            }
+        };
+
+        update();
+
+        timer = setTimeout(() => {
+            repeatTimer = setInterval(update, 100);
+        }, 500);
     };
-    plusBtn.onclick = (e) => {
-        e.preventDefault();
-        input.value = Number(input.value) + step;
-        onUpdate();
+
+    const stopChange = () => {
+        clearTimeout(timer);
+        clearInterval(repeatTimer);
+        timer = null;
+        repeatTimer = null;
+        currentStep = 100;
+        ticks = 0;
     };
+
+    // Обработка для минуса
+    minusBtn.onmousedown = (e) => { e.preventDefault(); startChange(-1); };
+    minusBtn.onmouseup = stopChange;
+    minusBtn.onmouseleave = stopChange;
+    minusBtn.ontouchstart = (e) => { e.preventDefault(); startChange(-1); };
+    minusBtn.ontouchend = stopChange;
+    minusBtn.ontouchcancel = stopChange;
+
+    // Обработка для плюса
+    plusBtn.onmousedown = (e) => { e.preventDefault(); startChange(1); };
+    plusBtn.onmouseup = stopChange;
+    plusBtn.onmouseleave = stopChange;
+    plusBtn.ontouchstart = (e) => { e.preventDefault(); startChange(1); };
+    plusBtn.ontouchend = stopChange;
+    plusBtn.ontouchcancel = stopChange;
 }
 // END_FUNCTION_createCustomNumberInput
 

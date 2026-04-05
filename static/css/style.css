@@ -1,26 +1,27 @@
 /* FILE: static/css/style.css */
-/* VERSION: 1.0.0 */
+/* VERSION: 1.0.1 */
 /* START_MODULE_CONTRACT: */
-/* PURPOSE: Стилизация приложения, управление темами и адаптивностью. */
-/* SCOPE: Глобальные стили, переменные тем, компоненты UI (панели, карточки, инпуты). */
-/* INPUT: CSS переменные темы (светлая/темная). */
-/* OUTPUT: Визуальное представление приложения. */
+/* PURPOSE: Application styling, theme management, and responsiveness. */
+/* SCOPE: Global styles, theme variables, UI components (panels, cards, inputs). */
+/* INPUT: CSS theme variables (light/dark). */
+/* OUTPUT: Visual representation of the application. */
 /* KEYWORDS: DOMAIN(UI): Styling; CONCEPT(Theming): CSS Variables; TECH(Layout): Flexbox */
 /* END_MODULE_CONTRACT */
 
 /* START_CHANGE_SUMMARY: */
-/* LAST_CHANGE: [v1.0.0 - Извлечение стилей из index.html в отдельный файл.] */
+/* LAST_CHANGE: [v1.0.1 - Translated comments and metadata to English, replaced currency symbol ₽ with $.] */
+/* PREV_CHANGE_SUMMARY: [v1.0.0 - Extracting styles from index.html into a separate file.] */
 /* END_CHANGE_SUMMARY */
 
 /* START_MODULE_MAP: */
-/* STYLE [10][Глобальные переменные темы] => :root, [data-theme="dark"] */
-/* STYLE [8][Базовые стили body] => body */
-/* STYLE [9][Контейнер приложения] => .app-container */
-/* STYLE [7][Левая панель и селектор типа чарта] => .left-panel, .chart-type-select */
-/* STYLE [7][Правая панель и элементы категорий] => .right-panel, .category-item */
+/* STYLE [10][Global theme variables] => :root, [data-theme="dark"] */
+/* STYLE [8][Base body styles] => body */
+/* STYLE [9][Application container] => .app-container */
+/* STYLE [7][Left panel and chart type selector] => .left-panel, .chart-type-select */
+/* STYLE [7][Right panel and category elements] => .right-panel, .category-item */
 /* END_MODULE_MAP */
 
-/* СВЕТЛАЯ ТЕМА */
+/* LIGHT THEME */
 :root {
     --bg-body: #f1f5f9;
     --bg-card: #ffffff;
@@ -39,23 +40,23 @@
     --unallocated-bg: #e2e8f0;
 }
 
-/* ТЁМНАЯ ТЕМА */
+/* DARK THEME */
 [data-theme="dark"] {
-    --bg-body: #0f172a;
-    --bg-card: #1e293b;
-    --bg-panel-left: #172033;
-    --bg-input: #0f172a;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --primary: #818cf8;
-    --primary-hover: #6366f1;
-    --border-color: #334155;
-    --border-focus: #6366f1;
-    --danger-bg: #450a0a;
-    --danger-text: #f87171;
-    --success-bg: #064e3b;
-    --success-text: #34d399;
-    --unallocated-bg: #334155;
+    --bg-body: #0B0E14;
+    --bg-card: #1C212D;
+    --bg-panel-left: #151923;
+    --bg-input: #151923;
+    --text-main: #FFFFFF;
+    --text-muted: #8A92A6;
+    --primary: #8B98FF;
+    --primary-hover: #7A86E6;
+    --border-color: #32384A;
+    --border-focus: #8B98FF;
+    --danger-bg: #3A1C20;
+    --danger-text: #FF6B6B;
+    --success-bg: #00875A;
+    --success-text: #FFFFFF;
+    --unallocated-bg: #32384A;
 }
 
 * {
@@ -75,7 +76,7 @@ body {
     min-height: 100vh;
 }
 
-/* === ХЕДЕР И УПРАВЛЕНИЕ === */
+/* === HEADER AND CONTROLS === */
 .header-controls {
     position: fixed;
     top: 20px;
@@ -171,13 +172,13 @@ body {
     width: 100%;
     max-width: 1050px;
     border-radius: 24px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-wrap: wrap;
     overflow: hidden;
 }
 
-/* === ЛЕВАЯ ПАНЕЛЬ === */
+/* === LEFT PANEL === */
 .left-panel {
     flex: 1;
     min-width: 320px;
@@ -208,6 +209,7 @@ body {
 .chart-type-select:focus { border-color: var(--primary); }
 
 .total-box {
+    position: relative;
     width: 100%;
     text-align: center;
     margin-bottom: 24px;
@@ -219,6 +221,50 @@ body {
     text-transform: uppercase;
     letter-spacing: 1.5px;
 }
+
+.total-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    margin: 0 auto;
+}
+
+.currency-select {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 8px;
+    width: auto;
+    padding: 4px 32px 4px 8px;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    background-color: transparent;
+    color: var(--primary);
+    font-size: 28px;
+    font-weight: 700;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+    font-family: inherit;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%238B98FF' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+}
+
+.currency-select:hover {
+    background-color: var(--bg-panel-left);
+}
+
+.currency-select:focus {
+    border-color: var(--border-focus);
+}
+
 .total-box input {
     display: inline-block;
     width: auto;
@@ -234,12 +280,12 @@ body {
 }
 
 .remaining-box {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
-    padding: 8px 24px;
-    border-radius: 20px;
-    background: var(--success-bg);
-    color: var(--success-text);
+    padding: 6px 18px;
+    border-radius: 100px;
+    background: #00875A;
+    color: #FFFFFF;
     margin-bottom: 20px;
     display: inline-block;
 }
@@ -297,7 +343,7 @@ body {
 }
 .legend-color { width: 24px; height: 10px; border-radius: 4px; }
 
-/* === ПРАВАЯ ПАНЕЛЬ === */
+/* === RIGHT PANEL === */
 .right-panel {
     flex: 1.6;
     min-width: 380px;
@@ -332,31 +378,40 @@ body {
 .cat-color::-moz-color-swatch { border: none; border-radius: 50%; }
 
 .cat-name { flex: 1; border: none; background: transparent; color: var(--text-main); font-size: 15px; font-weight: 600; outline: none; font-family: inherit; min-width: 100px; }
-.cat-amount {
-    width: 90px; border: none; background: transparent; color: var(--text-main);
-    border-radius: 4px; padding: 6px; font-size: 15px; font-weight: 600; outline: none; text-align: center; font-family: inherit;
-    min-width: 70px;
+.category-item .custom-number-input {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 4px;
+    gap: 4px;
 }
-.cat-amount:focus { border-color: var(--border-focus); background: var(--bg-card); }
+
+.cat-amount {
+    width: 70px; border: none; background: transparent; color: var(--text-main);
+    border-radius: 4px; padding: 4px; font-size: 15px; font-weight: 600; outline: none; text-align: center; font-family: inherit;
+    min-width: 60px;
+}
+.cat-amount:focus { background: transparent; }
 
 .cat-delete {
     background: var(--danger-bg); color: var(--danger-text); border: none; border-radius: 8px;
     width: 36px; height: 36px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: all 0.2s;
 }
-.cat-delete:hover { filter: brightness(0.95); }
+.cat-delete:hover { background: var(--danger-text); color: white; }
 
-.cat-slider { width: 100%; -webkit-appearance: none; appearance: none; background: transparent; height: 20px; cursor: pointer; margin: 0; }
-.cat-slider::-webkit-slider-runnable-track { width: 100%; height: 6px; background: var(--border-color); border-radius: 3px; }
+.cat-slider { width: 100%; -webkit-appearance: none; appearance: none; background: #2A2F3E; height: 6px; border-radius: 3px; cursor: pointer; margin: 10px 0; outline: none; }
+.cat-slider::-webkit-slider-runnable-track { width: 100%; height: 6px; background: transparent; border-radius: 3px; }
 .cat-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; height: 18px; width: 18px; border-radius: 50%; background: var(--primary); margin-top: -6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.1s; }
 .cat-slider::-webkit-slider-thumb:active { transform: scale(1.15); }
-.cat-slider::-moz-range-track { width: 100%; height: 6px; background: var(--border-color); border-radius: 3px; }
+.cat-slider::-moz-range-track { width: 100%; height: 6px; background: transparent; border-radius: 3px; }
 .cat-slider::-moz-range-thumb { height: 18px; width: 18px; border-radius: 50%; background: var(--primary); border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.1s; }
 .cat-slider::-moz-range-thumb:active { transform: scale(1.15); }
 
-.add-btn { background: transparent; color: var(--primary); border: 2px dashed var(--border-focus); border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; }
-.add-btn:hover { background: var(--bg-panel-left); }
+.add-btn { background: transparent; color: var(--primary); border: 2px dashed var(--border-color); border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; transition: border-color 0.3s; }
+.add-btn:hover { background: var(--bg-panel-left); border-color: var(--primary); }
 
-/* === МОДАЛЬНОЕ ОКНО === */
+/* === MODAL WINDOW === */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -401,7 +456,7 @@ body {
 .modal-btn.primary { background: var(--primary); color: white; }
 .modal-btn.secondary { background: var(--bg-panel-left); color: var(--text-main); }
 
-/* === КАСТОМНЫЙ NUMBER INPUT === */
+/* === CUSTOM NUMBER INPUT === */
 .custom-number-input {
     display: flex;
     align-items: center;
@@ -416,15 +471,17 @@ body {
     border: none;
     background: transparent;
     justify-content: center;
-    gap: 32px;
+    gap: 0;
     margin-top: 10px;
+    position: relative;
+    width: 100%;
 }
 .num-btn {
     width: 28px;
     height: 28px;
     border-radius: 6px;
     border: none;
-    background: var(--bg-panel-left);
+    background: transparent;
     color: var(--text-main);
     cursor: pointer;
     display: flex;
@@ -435,14 +492,26 @@ body {
     transition: all 0.2s;
     flex-shrink: 0;
 }
-.num-btn:hover { background: var(--primary); color: white; }
+.num-btn:hover { background: var(--bg-card); }
 .total-box .num-btn {
-    width: 54px;
-    height: 54px;
-    font-size: 28px;
-    border-radius: 16px;
+    width: 32px;
+    height: 48px;
+    font-size: 24px;
     background: var(--bg-card);
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+}
+.total-box .num-btn:hover { background: var(--border-color); }
+.total-box .minus-btn {
+    left: -40px;
+    border-radius: 12px;
+}
+.total-box .plus-btn {
+    right: -40px;
+    border-radius: 12px;
 }
 
 input[type="number"]::-webkit-inner-spin-button,
@@ -454,23 +523,23 @@ input[type="number"] {
     -moz-appearance: textfield;
 }
 .total-box input {
-    width: auto !important;
-    min-width: 200px;
+    width: 180px !important;
 }
 
-/* === КАСТОМНЫЙ ЦВЕТОВОЙ ПИКЕР === */
+/* === CUSTOM COLOR PICKER === */
 .color-picker-container { position: relative; }
 .color-badge {
     width: 36px;
     height: 36px;
     border-radius: 50%;
     cursor: pointer;
-    border: 2px solid var(--bg-card);
-    box-shadow: 0 0 0 1px var(--border-color);
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.2s;
 }
+.color-badge:hover { transform: scale(1.1); }
 .color-palette {
     position: absolute;
     top: 44px;
@@ -496,7 +565,7 @@ input[type="number"] {
 }
 .palette-color:hover { transform: scale(1.1); }
 
-/* === ПРОФИЛЬ CRUD МЕНЮ === */
+/* === PROFILE CRUD MENU === */
 .profile-manager-menu {
     position: relative;
     display: flex;
@@ -545,7 +614,7 @@ input[type="number"] {
 .profile-action-item.danger { color: var(--danger-text); }
 .profile-action-item.danger:hover { background: var(--danger-bg); }
 
-/* === АДАПТИВНОСТЬ ДЛЯ МОБИЛОК === */
+/* === MOBILE RESPONSIVENESS === */
 @media (max-width: 768px) {
     body { padding: 80px 10px 20px 10px; }
     .header-controls { 

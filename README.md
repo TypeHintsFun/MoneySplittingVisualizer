@@ -1,48 +1,48 @@
-# FinancesPlanning — Умное распределение бюджета
+# FinancesPlanning — Smart Budget Allocation
 
-Веб-приложение для визуализации и планирования бюджета с динамическим распределением по категориям, поддержкой темной темы и сохранением состояния в URL.
+A web application for budget visualization and planning with dynamic category distribution, dark theme support, and URL state persistence.
 
-## Структура проекта
+## Project Structure
 
-Проект декомпозирован на модули в соответствии с семантической разметкой для обеспечения модульности и читаемости:
+The project is decomposed into modules following semantic markup to ensure modularity and readability:
 
 ```text
 FinancesPlanning/
-├── index.html              # Основная структура документа и точки входа скриптов
-├── AppGraph.xml            # Карта зависимостей и архитектура модулей
+├── index.html              # Main document structure and script entry points
+├── AppGraph.xml            # Dependency map and module architecture
 ├── static/
 │   ├── css/
-│   │   └── style.css       # Глобальные стили, переменные тем и адаптивность
+│   │   └── style.css       # Global styles, theme variables, and responsiveness
 │   └── js/
-│       ├── state.js        # Управление состоянием (totalAmount, categories) и URL Persistence
-│       ├── chart-engine.js  # Интеграция с Chart.js ( Doughnut и Bar чарты)
-│       ├── ui-renderer.js  # Динамическая отрисовка списка категорий и легенды
-│       ├── theme-manager.js # Переключение тем и функционал копирования ссылок
-│       └── main.js         # Точка входа, инициализация приложения и слушателей событий
-└── README.md               # Документация проекта
+│       ├── state.js        # State management (totalAmount, categories) and URL Persistence
+│       ├── chart-engine.js  # Chart.js integration (Doughnut and Bar charts)
+│       ├── ui-renderer.js  # Dynamic rendering of category list and legend
+│       ├── theme-manager.js # Theme switching and link copying functionality
+│       └── main.js         # Entry point, app initialization, and event listeners
+└── README.md               # Project documentation
 ```
 
-## Ключевые возможности
+## Key Features
 
-- **Динамические графики:** Выбор между круговой диаграммой и стековым столбцом.
-- **Состояние в URL:** Все изменения мгновенно сохраняются в хэше URL (Base64), что позволяет делиться ссылкой на настроенный бюджет.
-- **Интерактивность:** Ползунки и поля ввода синхронизированы в реальном времени.
-- **Поддержка тем:** Светлая и темная темы с автоматической адаптацией графиков.
-- **Адаптивность:** Удобная работа на мобильных устройствах.
+- **Dynamic Charts:** Choose between a doughnut chart and a stacked bar chart.
+- **URL State Persistence:** All changes are instantly saved in the URL hash (Base64), allowing you to share a link to your configured budget.
+- **Interactivity:** Sliders and input fields are synchronized in real-time.
+- **Theme Support:** Light and dark themes with automatic chart adaptation.
+- **Responsiveness:** Optimized for mobile devices.
 
-## Технологии
+## Technologies
 
 - **Frontend:** Pure JavaScript (ES6+), HTML5, CSS3.
-- **Библиотеки:** [Chart.js](https://www.chartjs.org/) (через CDN).
-- **Шрифты:** [Inter](https://fonts.google.com/specimen/Inter) (Google Fonts).
+- **Libraries:** [Chart.js](https://www.chartjs.org/) (via CDN).
+- **Fonts:** [Inter](https://fonts.google.com/specimen/Inter) (Google Fonts).
 
-## Как запустить
+## How to Run
 
-Приложение является чисто клиентским (SPA) и не требует сервера для базовой работы.
+The application is a pure client-side SPA and does not require a server for basic operation.
 
-1. Клонируйте репозиторий или скачайте файлы.
-2. Откройте `index.html` в любом современном браузере.
-3. (Опционально) Для корректной работы копирования ссылок и некоторых API браузера рекомендуется открывать через локальный сервер (например, расширение Live Server в VS Code или `python -m http.server`).
+1. Clone the repository or download the files.
+2. Open `index.html` in any modern browser.
+3. (Optional) For link copying and certain browser APIs to function correctly, it is recommended to open via a local server (e.g., Live Server extension in VS Code or `python -m http.server`).
 
 ---
-Разработано с использованием семантической разметки и принципов Log Driven Development (LDD).
+Developed using semantic markup and Log Driven Development (LDD) principles.

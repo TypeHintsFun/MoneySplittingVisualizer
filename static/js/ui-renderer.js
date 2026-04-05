@@ -1,27 +1,27 @@
 /**
  * FILE: static/js/ui-renderer.js
- * VERSION: 1.0.0
+ * VERSION: 1.1.1
  * START_MODULE_CONTRACT:
- * PURPOSE: Отрисовка динамических UI элементов: списка категорий и легенды.
- * SCOPE: Управление DOM элементами категорий, обработчики событий ввода.
- * INPUT: Данные категорий, конфигурация Chart.js (для легенды).
- * OUTPUT: HTML элементы, DOM узлы в контейнере списка.
+ * PURPOSE: Rendering of dynamic UI elements: category list and legend.
+ * SCOPE: Management of category DOM elements, input event handlers.
+ * INPUT: Category data, Chart.js configuration (for legend).
+ * OUTPUT: HTML elements, DOM nodes in the list container.
  * KEYWORDS: DOMAIN(UI): Rendering; CONCEPT(Components): DOMCreation; TECH(Events): InputHandlers
  * END_MODULE_CONTRACT
  */
 
 // START_CHANGE_SUMMARY:
-// LAST_CHANGE: [v1.1.0 - Добавление функции renderProfileSelector для управления профилями в UI.]
-// PREV_CHANGE_SUMMARY: [v1.0.0 - Извлечение логики отрисовки категорий и легенды из index.html.]
+// LAST_CHANGE: [v1.1.1 - Translated UI strings to English and changed currency symbol to $.]
+// PREV_CHANGE_SUMMARY: [v1.1.0 - Adding renderProfileSelector function for profile management in UI.]
 // END_CHANGE_SUMMARY
 
 // START_MODULE_MAP:
-// FUNC [9][Создание элемента категории] => createCategoryElement
-// FUNC [8][Генерация легенды чарта] => generateLegend
-// FUNC [8][Отрисовка списка профилей] => renderProfileSelector
+// FUNC [9][Creating a category element] => createCategoryElement
+// FUNC [8][Generating chart legend] => generateLegend
+// FUNC [8][Rendering profile list] => renderProfileSelector
 // END_MODULE_MAP
 
-// START_BLOCK_PALETTE: [Список предустановленных "мягких" цветов]
+// START_BLOCK_PALETTE: [List of preset "soft" colors]
 const COLOR_PALETTE = [
     '#818cf8', '#6366f1', '#4f46e5', '#34d399', 
     '#10b981', '#059669', '#f472b6', '#db2777', 
@@ -33,11 +33,11 @@ const COLOR_PALETTE = [
 // START_FUNCTION_showModal
 /**
  * START_CONTRACT:
- * PURPOSE: Отображает кастомное модальное окно (замена prompt/confirm).
+ * PURPOSE: Displays a custom modal window (replacement for prompt/confirm).
  * INPUTS: 
- * - string => title: Заголовок
+ * - string => title: Title
  * - string => type: 'prompt' | 'confirm'
- * - string => defaultValue: Значение по умолчанию для prompt
+ * - string => defaultValue: Default value for prompt
  * OUTPUTS: 
  * - Promise<string | boolean | null>
  * END_CONTRACT
@@ -92,7 +92,7 @@ function showModal(title, type = 'prompt', defaultValue = '', text = '') {
 // START_FUNCTION_getRandomColor
 /**
  * START_CONTRACT:
- * PURPOSE: Возвращает случайный цвет из палитры.
+ * PURPOSE: Returns a random color from the palette.
  * END_CONTRACT
  */
 function getRandomColor() {
@@ -103,10 +103,10 @@ function getRandomColor() {
 // START_FUNCTION_createCustomNumberInput
 /**
  * START_CONTRACT:
- * PURPOSE: Создает обертку для числового ввода с кнопками +/-.
+ * PURPOSE: Creates a wrapper for numeric input with +/- buttons.
  * INPUTS: 
- * - HTMLInputElement => input: Оригинальный инпут
- * - function => onUpdate: Коллбек при изменении
+ * - HTMLInputElement => input: Original input
+ * - function => onUpdate: Callback on change
  * END_CONTRACT
  */
 function setupCustomNumberInput(input, onUpdate) {
@@ -122,7 +122,7 @@ function setupCustomNumberInput(input, onUpdate) {
     let ticks = 0;
 
     const startChange = (direction) => {
-        stopChange(); // На всякий случай сбрасываем предыдущий
+        stopChange(); // Reset previous just in case
         
         const update = () => {
             const val = Number(input.value) || 0;
@@ -130,9 +130,9 @@ function setupCustomNumberInput(input, onUpdate) {
             onUpdate();
             
             ticks++;
-            // Увеличиваем шаг каждые 3 тика после начальной задержки
+            // Increase step every 3 ticks after initial delay
             if (ticks > 5 && ticks % 3 === 0) {
-                currentStep = Math.min(currentStep * 1.5, 100000); // Ограничим макс. шаг 100к
+                currentStep = Math.min(currentStep * 1.5, 100000); // Limit max step to 100k
                 currentStep = Math.round(currentStep / 100) * 100;
             }
         };
@@ -153,7 +153,7 @@ function setupCustomNumberInput(input, onUpdate) {
         ticks = 0;
     };
 
-    // Обработка для минуса
+    // Handling for minus
     minusBtn.onmousedown = (e) => { e.preventDefault(); startChange(-1); };
     minusBtn.onmouseup = stopChange;
     minusBtn.onmouseleave = stopChange;
@@ -161,7 +161,7 @@ function setupCustomNumberInput(input, onUpdate) {
     minusBtn.ontouchend = stopChange;
     minusBtn.ontouchcancel = stopChange;
 
-    // Обработка для плюса
+    // Handling for plus
     plusBtn.onmousedown = (e) => { e.preventDefault(); startChange(1); };
     plusBtn.onmouseup = stopChange;
     plusBtn.onmouseleave = stopChange;
@@ -174,10 +174,10 @@ function setupCustomNumberInput(input, onUpdate) {
 // START_FUNCTION_createColorPicker
 /**
  * START_CONTRACT:
- * PURPOSE: Создает кастомный выбор цвета.
+ * PURPOSE: Creates a custom color picker.
  * INPUTS: 
- * - string => initialColor: Начальный цвет
- * - function => onChange: Коллбек при выборе
+ * - string => initialColor: Initial color
+ * - function => onChange: Callback on selection
  * END_CONTRACT
  */
 function createColorPicker(initialColor, onChange) {
@@ -219,39 +219,39 @@ function createColorPicker(initialColor, onChange) {
 
 /**
  * START_CONTRACT:
- * PURPOSE: Отрисовывает кастомное меню управления профилями.
+ * PURPOSE: Renders a custom profile management menu.
  * INPUTS: None
  * OUTPUTS: None
- * SIDE_EFFECTS: Обновляет #profile-manager-root.
+ * SIDE_EFFECTS: Updates #profile-manager-root.
  * END_CONTRACT
  */
 function renderProfileSelector() {
-    console.log("[UI][IMP:7][renderProfileSelector] Отрисовка селектора профилей");
+    console.log("[UI][IMP:7][renderProfileSelector] Rendering profile selector");
     const root = document.getElementById('profile-manager-root');
     if (!root) {
-        console.error("[UI][IMP:10][renderProfileSelector] Не найден #profile-manager-root");
+        console.error("[UI][IMP:10][renderProfileSelector] #profile-manager-root not found");
         return;
     }
 
     const currentProf = window.profiles.find(p => p.id === window.currentProfileId);
     
-    // START_BLOCK_RENDER: [Генерация HTML]
+    // START_BLOCK_RENDER: [HTML Generation]
     root.innerHTML = `
         <div class="profile-manager-menu">
-            <select id="profile-select" class="profile-select" title="Выберите профиль">
+            <select id="profile-select" class="profile-select" title="Select Profile">
                 ${window.profiles.map(p => `<option value="${p.id}" ${p.id === window.currentProfileId ? 'selected' : ''}>${p.name}</option>`).join('')}
             </select>
-            <button class="profile-dots-btn" title="Управление профилем">⋮</button>
+            <button class="profile-dots-btn" title="Manage Profile">⋮</button>
             <div class="profile-actions-dropdown">
-                <div class="profile-action-item" id="prof-add"><span>➕</span> Создать новый</div>
-                <div class="profile-action-item" id="prof-rename"><span>✏️</span> Переименовать</div>
-                <div class="profile-action-item danger" id="prof-delete"><span>🗑️</span> Удалить текущий</div>
+                <div class="profile-action-item" id="prof-add"><span>➕</span> Create New</div>
+                <div class="profile-action-item" id="prof-rename"><span>✏️</span> Rename</div>
+                <div class="profile-action-item danger" id="prof-delete"><span>🗑️</span> Delete Current</div>
             </div>
         </div>
     `;
     // END_BLOCK_RENDER
 
-    // START_BLOCK_EVENTS: [Настройка событий]
+    // START_BLOCK_EVENTS: [Event Setup]
     const select = root.querySelector('#profile-select');
     const dotsBtn = root.querySelector('.profile-dots-btn');
     const dropdown = root.querySelector('.profile-actions-dropdown');
@@ -268,7 +268,7 @@ function renderProfileSelector() {
     };
 
     root.querySelector('#prof-add').onclick = async () => {
-        const name = await showModal('Новый профиль', 'prompt', `План ${window.profiles.length + 1}`);
+        const name = await showModal('New Profile', 'prompt', `Plan ${window.profiles.length + 1}`);
         if (name) {
             const newProf = window.createProfile(name);
             window.switchProfile(newProf.id);
@@ -277,7 +277,7 @@ function renderProfileSelector() {
 
     root.querySelector('#prof-rename').onclick = async () => {
         if (!currentProf) return;
-        const newName = await showModal('Переименовать профиль', 'prompt', currentProf.name);
+        const newName = await showModal('Rename Profile', 'prompt', currentProf.name);
         if (newName && newName !== currentProf.name) {
             currentProf.name = newName;
             window.StorageManager.saveProfiles(window.profiles);
@@ -287,10 +287,10 @@ function renderProfileSelector() {
 
     root.querySelector('#prof-delete').onclick = async () => {
         if (window.profiles.length <= 1) {
-            alert('Нельзя удалить единственный профиль!');
+            alert('Cannot delete the only profile!');
             return;
         }
-        const confirmed = await showModal('Удаление', 'confirm', '', `Удалить профиль "${currentProf.name}"?`);
+        const confirmed = await showModal('Delete', 'confirm', '', `Delete profile "${currentProf.name}"?`);
         if (confirmed) {
             window.profiles = window.profiles.filter(p => p.id !== window.currentProfileId);
             window.StorageManager.saveProfiles(window.profiles);
@@ -304,12 +304,12 @@ function renderProfileSelector() {
 // START_FUNCTION_createCategoryElement
 /**
  * START_CONTRACT:
- * PURPOSE: Создает DOM-узел для одной категории с полями ввода и ползунком.
+ * PURPOSE: Creates a DOM node for a single category with input fields and a slider.
  * INPUTS: 
  * - object - cat: {id, name, amount, color}
  * OUTPUTS: 
- * - HTMLElement - Контейнер .category-item
- * SIDE_EFFECTS: Навешивает обработчики событий (input, keydown, click).
+ * - HTMLElement - Container .category-item
+ * SIDE_EFFECTS: Attaches event handlers (input, keydown, click).
  * END_CONTRACT
  */
 function createCategoryElement(cat) {
@@ -318,18 +318,18 @@ function createCategoryElement(cat) {
     div.innerHTML = `
         <div class="cat-top">
             <div class="cat-color-wrapper"></div>
-            <input type="text" class="cat-name" value="${cat.name}" placeholder="Название">
+            <input type="text" class="cat-name" value="${cat.name}" placeholder="Name">
             <div class="custom-number-input">
                 <button class="num-btn minus-btn">−</button>
                 <input type="number" class="cat-amount" value="${cat.amount}" min="0" step="1000">
                 <button class="num-btn plus-btn">+</button>
             </div>
-            <button class="cat-delete" title="Удалить">✕</button>
+            <button class="cat-delete" title="Delete">✕</button>
         </div>
         <input type="range" class="cat-slider" value="${cat.amount}" min="0" max="${window.totalAmount}">
     `;
 
-    // START_BLOCK_ELEMENT_REFS: [Получение ссылок на дочерние элементы]
+    // START_BLOCK_ELEMENT_REFS: [Getting references to child elements]
     const colorWrapper = div.querySelector('.cat-color-wrapper');
     const nameIn = div.querySelector('.cat-name');
     const amountIn = div.querySelector('.cat-amount');
@@ -337,7 +337,12 @@ function createCategoryElement(cat) {
     const deleteBtn = div.querySelector('.cat-delete');
     // END_BLOCK_ELEMENT_REFS
 
-    // START_BLOCK_CUSTOM_COMPONENTS: [Инициализация кастомных компонентов]
+    const updateSliderFill = () => {
+        const percentage = (sliderIn.value / sliderIn.max) * 100;
+        sliderIn.style.background = `linear-gradient(to right, var(--primary) ${percentage}%, #2A2F3E ${percentage}%)`;
+    };
+
+    // START_BLOCK_CUSTOM_COMPONENTS: [Initializing custom components]
     const picker = createColorPicker(cat.color, (newColor) => {
         cat.color = newColor;
         window.updateApp();
@@ -347,11 +352,12 @@ function createCategoryElement(cat) {
     setupCustomNumberInput(amountIn, () => {
         cat.amount = Number(amountIn.value);
         sliderIn.value = cat.amount;
+        updateSliderFill();
         window.updateApp();
     });
     // END_BLOCK_CUSTOM_COMPONENTS
 
-    // START_BLOCK_EVENT_HANDLERS: [Настройка обработчиков событий]
+    // START_BLOCK_EVENT_HANDLERS: [Setting up event handlers]
     const handleEnterKey = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -368,6 +374,7 @@ function createCategoryElement(cat) {
         let val = Math.max(0, Number(e.target.value));
         cat.amount = val;
         sliderIn.value = val;
+        updateSliderFill();
         window.updateApp();
     });
 
@@ -375,8 +382,15 @@ function createCategoryElement(cat) {
         let val = Number(e.target.value);
         cat.amount = val;
         amountIn.value = val;
+        updateSliderFill();
         window.updateApp();
     });
+
+    // Initial fill
+    setTimeout(updateSliderFill, 0);
+    
+    // Attach to element for global updates
+    sliderIn.updateFill = updateSliderFill;
 
     deleteBtn.addEventListener('click', () => {
         window.categories = window.categories.filter(c => c.id !== cat.id);
@@ -392,11 +406,11 @@ function createCategoryElement(cat) {
 // START_FUNCTION_generateLegend
 /**
  * START_CONTRACT:
- * PURPOSE: Динамически перерисовывает легенду под диаграммой.
+ * PURPOSE: Dynamically redraws the legend below the chart.
  * INPUTS: 
- * - object - data: Объект данных Chart.js (labels, datasets)
+ * - object - data: Chart.js data object (labels, datasets)
  * OUTPUTS: None
- * SIDE_EFFECTS: Очищает и заполняет #custom-legend
+ * SIDE_EFFECTS: Clears and fills #custom-legend
  * END_CONTRACT
  */
 function generateLegend(data) {
@@ -406,7 +420,7 @@ function generateLegend(data) {
     legendEl.innerHTML = '';
     const chartType = document.getElementById('chart-type-select').value;
 
-    // START_BLOCK_FILL_LEGEND: [Генерация HTML для элементов легенды]
+    // START_BLOCK_FILL_LEGEND: [Generating HTML for legend items]
     if (chartType === 'doughnut') {
         data.labels.forEach((label, i) => {
             const color = data.datasets[0].backgroundColor[i];

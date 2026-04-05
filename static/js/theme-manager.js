@@ -1,44 +1,44 @@
 /**
  * FILE: static/js/theme-manager.js
- * VERSION: 1.0.0
+ * VERSION: 1.1.1
  * START_MODULE_CONTRACT:
- * PURPOSE: Переключение тем оформления и управление копированием ссылки.
- * SCOPE: Управление атрибутами темы DOM, взаимодействие с буфером обмена.
- * INPUT: События нажатия кнопок переключения темы и копирования.
- * OUTPUT: Изменение data-theme на <html>, статус копирования в UI.
+ * PURPOSE: Theme switching and clipboard link management.
+ * SCOPE: DOM theme attribute management, clipboard interaction.
+ * INPUT: Theme toggle and copy button click events.
+ * OUTPUT: data-theme change on <html>, copy status in UI.
  * KEYWORDS: DOMAIN(UI): Theme; TECH(Storage): localStorage; CONCEPT(UX): ClipboardFeedback
  * END_MODULE_CONTRACT
  */
 
 // START_CHANGE_SUMMARY:
-// LAST_CHANGE: [v1.0.1 - Подключение StorageManager для сохранения темы и автоматического определения предпочтений браузера.]
-// PREV_CHANGE_SUMMARY: [v1.0.0 - Извлечение логики тем и буфера обмена из index.html.]
+// LAST_CHANGE: [v1.1.1 - Fixed syntax errors by using // for START_BLOCK/END_BLOCK tags in JS.]
+// PREV_CHANGE_SUMMARY: [v1.1.0 - Translated UI strings to English and updated currency symbol to $.]
 // END_CHANGE_SUMMARY
 
 // START_MODULE_MAP:
-// FUNC [8][Переключение темы] => toggleTheme
-// FUNC [8][Применение темы при загрузке] => applyStoredTheme
-// FUNC [9][Копирование ссылки в буфер] => copyLinkToClipboard
+// FUNC [8][Theme switching] => toggleTheme
+// FUNC [8][Apply theme on load] => applyStoredTheme
+// FUNC [9][Copy link to clipboard] => copyLinkToClipboard
 // END_MODULE_MAP
 
 // START_FUNCTION_applyStoredTheme
 // START_CONTRACT:
-// PURPOSE: Применяет тему из LocalStorage или браузерных настроек при инициализации.
+// PURPOSE: Applies theme from LocalStorage or browser settings during initialization.
 // INPUTS: None
 // OUTPUTS: None
-// SIDE_EFFECTS: Изменяет data-theme на <html>, обновляет текст #theme-toggle.
+// SIDE_EFFECTS: Changes data-theme on <html>, updates #theme-toggle text.
 // END_CONTRACT
 function applyStoredTheme() {
     const root = document.documentElement;
     const themeToggleBtn = document.getElementById('theme-toggle');
     const theme = window.StorageManager.getTheme();
     
-    // START_BLOCK_APPLY_THEME: [Применение темы]
+    // START_BLOCK_APPLY_THEME: [Applying theme]
     root.setAttribute('data-theme', theme);
     if (themeToggleBtn) {
         themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
     }
-    console.log(`[Theme][IMP:8][applyStoredTheme] Тема '${theme}' применена. [SUCCESS]`);
+    console.log(`[Theme][IMP:8][applyStoredTheme] Theme '${theme}' applied. [SUCCESS]`);
     // END_BLOCK_APPLY_THEME
 }
 // END_FUNCTION_applyStoredTheme
@@ -46,10 +46,10 @@ function applyStoredTheme() {
 // START_FUNCTION_toggleTheme
 /**
  * START_CONTRACT:
- * PURPOSE: Переключает тему между 'light' и 'dark'. Обновляет иконку кнопки и сохраняет в LocalStorage.
+ * PURPOSE: Toggles theme between 'light' and 'dark'. Updates button icon and saves to LocalStorage.
  * INPUTS: None
  * OUTPUTS: None
- * SIDE_EFFECTS: Изменяет data-theme на <html>, обновляет текст #theme-toggle, пишет в LocalStorage.
+ * SIDE_EFFECTS: Changes data-theme on <html>, updates #theme-toggle text, writes to LocalStorage.
  * END_CONTRACT
  */
 function toggleTheme() {
@@ -58,14 +58,14 @@ function toggleTheme() {
     const currentTheme = root.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     
-    // START_BLOCK_UPDATE_THEME: [Переключение атрибута и сохранение]
+    // START_BLOCK_UPDATE_THEME: [Switching attribute and saving]
     root.setAttribute('data-theme', newTheme);
     themeToggleBtn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
     window.StorageManager.setTheme(newTheme);
-    console.log(`[Theme][IMP:9][toggleTheme] Тема переключена на '${newTheme}' и сохранена. [SUCCESS]`);
+    console.log(`[Theme][IMP:9][toggleTheme] Theme switched to '${newTheme}' and saved. [SUCCESS]`);
     // END_BLOCK_UPDATE_THEME
     
-    // START_BLOCK_SYNC_CHART: [Синхронизация цветов чарта]
+    // START_BLOCK_SYNC_CHART: [Chart color synchronization]
     if (window.updateApp) window.updateApp(); 
     // END_BLOCK_SYNC_CHART
 }
@@ -74,43 +74,43 @@ function toggleTheme() {
 // START_FUNCTION_copyLinkToClipboard
 /**
  * START_CONTRACT:
- * PURPOSE: Копирует текущий URL с хэшем состояния в буфер обмена. Показывает временный статус успеха.
+ * PURPOSE: Copies current URL with state hash to clipboard. Shows temporary success status.
  * INPUTS: None
  * OUTPUTS: None
- * SIDE_EFFECTS: Читает window.location.href, пишет в navigator.clipboard.
+ * SIDE_EFFECTS: Reads window.location.href, writes to navigator.clipboard.
  * END_CONTRACT
  */
 function copyLinkToClipboard() {
     const copyBtn = document.getElementById('copy-link-btn');
     const copyText = document.getElementById('copy-link-text');
     
-    // START_BLOCK_GENERATE_STATEFUL_URL: [Генерация URL с актуальным состоянием без изменения адресной строки]
-    // Мы генерируем хэш состояния и добавляем его к базовому URL вручную для копирования.
-    // Это позволяет поделиться актуальными данными, не "загрязняя" адресную строку пользователя.
+    // START_BLOCK_GENERATE_STATEFUL_URL: [Generating URL with current state without changing address bar]
+    // We generate the state hash and add it to the base URL manually for copying.
+    // This allows sharing current data without "polluting" the user's address bar.
     let shareURL = window.location.origin + window.location.pathname + window.location.search;
     if (window.getStateAsURLHash) {
         shareURL += window.getStateAsURLHash();
     }
     // END_BLOCK_GENERATE_STATEFUL_URL
     
-    // START_BLOCK_COPY_PROCESS: [Операция копирования]
-    console.log(`[Theme][IMP:7][copyLinkToClipboard][START_COPY] Инициация копирования ссылки: ${shareURL.length} chars`);
+    // START_BLOCK_COPY_PROCESS: [Copy operation]
+    console.log(`[Theme][IMP:7][copyLinkToClipboard][START_COPY] Initiating link copy: ${shareURL.length} chars`);
     
     navigator.clipboard.writeText(shareURL).then(() => {
-        // START_BLOCK_UI_FEEDBACK: [Индикация успеха]
+        // START_BLOCK_UI_FEEDBACK: [Success indication]
         copyBtn.classList.add('copied');
-        copyText.textContent = 'Скопировано!';
-        console.log(`[Theme][IMP:8][copyLinkToClipboard][SUCCESS] Ссылка скопирована успешно`);
+        copyText.textContent = 'Copied!';
+        console.log(`[Theme][IMP:8][copyLinkToClipboard][SUCCESS] Link copied successfully`);
         
         setTimeout(() => {
             copyBtn.classList.remove('copied');
-            copyText.textContent = 'Поделиться';
-            console.log(`[Theme][IMP:6][copyLinkToClipboard][RESET] Статус кнопки сброшен`);
+            copyText.textContent = 'Share';
+            console.log(`[Theme][IMP:6][copyLinkToClipboard][RESET] Button status reset`);
         }, 2000);
         // END_BLOCK_UI_FEEDBACK
     }).catch(err => {
-        console.error(`[Theme][IMP:10][copyLinkToClipboard][ERROR] Ошибка копирования: ${err.message}`);
-        alert('Не удалось скопировать ссылку. Пожалуйста, скопируйте её вручную из адресной строки.');
+        console.error(`[Theme][IMP:10][copyLinkToClipboard][ERROR] Copy error: ${err.message}`);
+        alert('Failed to copy link. Please copy it manually from the address bar.');
     });
     // END_BLOCK_COPY_PROCESS
 }

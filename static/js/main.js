@@ -2,52 +2,52 @@
  * FILE: static/js/main.js
  * VERSION: 1.0.0
  * START_MODULE_CONTRACT:
- * PURPOSE: Точка входа приложения, инициализация всех модулей и DOM слушателей.
- * SCOPE: Запуск приложения, управление начальной загрузкой, регистрация глобальных обработчиков.
- * INPUT: Глобальный DOM контекст, функции из других модулей (state, ui, chart).
- * OUTPUT: Запущенное и готовое к работе веб-приложение.
+ * PURPOSE: Application entry point, initialization of all modules and DOM listeners.
+ * SCOPE: Application launch, initial load management, registration of global handlers.
+ * INPUT: Global DOM context, functions from other modules (state, ui, chart).
+ * OUTPUT: Launched and ready-to-use web application.
  * KEYWORDS: DOMAIN(Application): Main; CONCEPT(Initialization): Bootstrap; TECH(DOM): EventDelegation
  * END_MODULE_CONTRACT
  */
 
 /**
  * START_CHANGE_SUMMARY:
- * LAST_CHANGE: [v1.1.0 - Инициализация профилей и тем при старте. Добавление управления профилями в DOM.]
- * PREV_CHANGE_SUMMARY: [v1.0.0 - Инициализация приложения, объединение всех функциональных модулей.]
+ * LAST_CHANGE: [v1.1.0 - Initialization of profiles and themes at startup. Adding profile management to DOM.]
+ * PREV_CHANGE_SUMMARY: [v1.0.0 - Application initialization, combining all functional modules.]
  * END_CHANGE_SUMMARY
  */
 
 /**
  * START_MODULE_MAP:
- * FUNC [10][Главная функция инициализации] => init
+ * FUNC [10][Main initialization function] => init
  * END_MODULE_MAP
  */
 
 // START_FUNCTION_init
 /**
  * START_CONTRACT:
- * PURPOSE: Запускает процесс инициализации: загружает состояние, отрисовывает UI, регистрирует слушатели.
+ * PURPOSE: Starts the initialization process: loads state, renders UI, registers listeners.
  * INPUTS: None
  * OUTPUTS: None
- * SIDE_EFFECTS: Изменяет DOM (добавляет элементы, слушатели), запускает Chart.js.
+ * SIDE_EFFECTS: Modifies DOM (adds elements, listeners), starts Chart.js.
  * END_CONTRACT
  */
 function init() {
-    console.log("[Main][IMP:9][init][START_BOOTSTRAP] Инициализация приложения начата [INFO]");
+    console.log("[Main][IMP:9][init][START_BOOTSTRAP] Application initialization started [INFO]");
     
-    // START_BLOCK_THEME_INIT: [Инициализация темы]
+    // START_BLOCK_THEME_INIT: [Theme initialization]
     if (window.applyStoredTheme) {
         window.applyStoredTheme();
     }
     // END_BLOCK_THEME_INIT
 
-    // START_BLOCK_STATE_LOAD: [Загрузка профилей и данных]
+    // START_BLOCK_STATE_LOAD: [Loading profiles and data]
     if (window.initProfiles) {
         window.initProfiles();
     }
     // END_BLOCK_STATE_LOAD
 
-    // START_BLOCK_UI_INIT: [Отрисовка начального интерфейса]
+    // START_BLOCK_UI_INIT: [Rendering initial interface]
     const listEl = document.getElementById('categories-list');
     if (window.createCategoryElement) {
         window.categories.forEach(cat => listEl.appendChild(window.createCategoryElement(cat)));
@@ -57,7 +57,7 @@ function init() {
     }
     // END_BLOCK_UI_INIT
 
-    // START_BLOCK_CHART_BOOT: [Запуск графического движка]
+    // START_BLOCK_CHART_BOOT: [Starting graphics engine]
     if (window.initChart) {
         window.initChart();
     }
@@ -65,11 +65,12 @@ function init() {
         window.updateApp();
     }
     window.isAppLoaded = true;
-    console.log("[Main][IMP:9][init][APP_LOADED] Флаг загрузки приложения установлен в true [SUCCESS]");
+    console.log("[Main][IMP:9][init][APP_LOADED] Application load flag set to true [SUCCESS]");
     // END_BLOCK_CHART_BOOT
 
-    // START_BLOCK_EVENT_LISTENERS: [Регистрация глобальных слушателей событий]
+    // START_BLOCK_EVENT_LISTENERS: [Registration of global event listeners]
     const totalInput = document.getElementById('total-input');
+    const currencySelect = document.getElementById('currency-select');
     const themeToggleBtn = document.getElementById('theme-toggle');
     const copyLinkBtn = document.getElementById('copy-link-btn');
     const chartTypeSelect = document.getElementById('chart-type-select');
@@ -78,7 +79,7 @@ function init() {
     if (totalInput) {
         totalInput.addEventListener('input', window.updateApp);
         
-        // Инициализация кастомных кнопок +/- для общей суммы
+        // Initialization of custom +/- buttons for total sum
         if (window.setupCustomNumberInput) {
             window.setupCustomNumberInput(totalInput, window.updateApp);
         }
@@ -90,6 +91,10 @@ function init() {
                 if (firstCatName) firstCatName.focus();
             }
         });
+    }
+
+    if (currencySelect) {
+        currencySelect.addEventListener('change', window.updateApp);
     }
 
     if (themeToggleBtn && window.toggleTheme) {
@@ -120,16 +125,16 @@ function init() {
                 
                 newElement.scrollIntoView({ behavior: 'smooth' });
                 newElement.querySelector('.cat-name').focus();
-                console.log("[Main][IMP:7][add-btn][CLICK] Добавлена новая категория [SUCCESS]");
+                console.log("[Main][IMP:7][add-btn][CLICK] New category added [SUCCESS]");
             }
         });
     }
     // END_BLOCK_EVENT_LISTENERS
 
-    console.log("[Main][IMP:9][init][BOOTSTRAP_COMPLETE] Инициализация завершена успешно [SUCCESS]");
+    console.log("[Main][IMP:9][init][BOOTSTRAP_COMPLETE] Initialization completed successfully [SUCCESS]");
 }
 // END_FUNCTION_init
 
-// START_BLOCK_LAUNCH: [Запуск приложения по событию DOMContentLoaded]
+// START_BLOCK_LAUNCH: [Application launch on DOMContentLoaded event]
 document.addEventListener('DOMContentLoaded', init);
 // END_BLOCK_LAUNCH

@@ -1,32 +1,32 @@
 <!-- 
-  ПРОЕКТ: FinancesPlanning (Serverless)
-  Размещено на: GitHub Pages
-  Хранилище: LocalStorage (Профили и Темы)
+  PROJECT: FinancesPlanning (Serverless)
+  Hosted on: GitHub Pages
+  Storage: LocalStorage (Profiles and Themes)
 -->
 <!DOCTYPE html>
-<html lang="ru" data-theme="light">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Распределение бюджета</title>
-    <!-- Шрифт Inter -->
+    <title>Budget Allocation</title>
+    <!-- Inter Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Основные стили -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <!-- Main Styles -->
     <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
 
 <div class="header-controls">
     <div class="profile-manager" id="profile-manager-root">
-        <!-- Будет отрисовано через JS -->
+        <!-- Will be rendered via JS -->
     </div>
     <div class="action-buttons">
-        <button class="theme-toggle" id="theme-toggle" title="Переключить тему">🌙</button>
-        <button class="copy-link-btn" id="copy-link-btn" title="Скопировать ссылку для шеринга">
+        <button class="theme-toggle" id="theme-toggle" title="Toggle Theme">🌙</button>
+        <button class="copy-link-btn" id="copy-link-btn" title="Copy sharing link">
             <span>🔗</span>
-            <span id="copy-link-text">Поделиться</span>
+            <span id="copy-link-text">Share</span>
         </button>
     </div>
 </div>
@@ -34,27 +34,35 @@
 <div class="app-container">
     <div class="left-panel">
         <select id="chart-type-select" class="chart-type-select">
-            <option value="doughnut">🍩 Круговая диаграмма</option>
-            <option value="bar">📊 Один разделенный столбец</option>
+            <option value="doughnut">🍩 Doughnut Chart</option>
+            <option value="bar">📊 Single Stacked Bar</option>
         </select>
 
         <div class="total-box">
-            <label>Общая сумма (₽)</label>
+            <label>Total</label>
             <div class="custom-number-input">
                 <button class="num-btn minus-btn">−</button>
-                <input type="number" id="total-input" value="100000" min="0" step="10000">
+                <div class="total-input-wrapper">
+                    <input type="number" id="total-input" value="100000" min="0" step="10000">
+                    <select id="currency-select" class="currency-select">
+                        <option value="$">$</option>
+                        <option value="₽">₽</option>
+                        <option value="₴">₴</option>
+                        <option value="¥">¥</option>
+                    </select>
+                </div>
                 <button class="num-btn plus-btn">+</button>
             </div>
         </div>
         
-        <div class="remaining-box" id="remaining-box">Остаток: 0 ₽</div>
+        <div class="remaining-box" id="remaining-box">Remaining: 0 $</div>
 
         <div class="chart-container">
             <div class="chart-wrapper">
                 <canvas id="myChart"></canvas>
                 <div class="chart-center" id="chart-center">
-                    <div class="chart-center-val" id="chart-center-val">100 000 ₽</div>
-                    <div class="chart-center-label">Всего</div>
+                    <div class="chart-center-val" id="chart-center-val">100 000 $</div>
+                    <div class="chart-center-label">Total</div>
                 </div>
             </div>
             <div id="custom-legend" class="custom-legend"></div>
@@ -62,28 +70,28 @@
     </div>
 
     <div class="right-panel">
-        <div class="panel-title">Распределение по частям</div>
+        <div class="panel-title">Categories</div>
         <div class="categories-list" id="categories-list"></div>
         <button class="add-btn" id="add-btn">
-            <span>+</span> Добавить категорию
+            <span>+</span> Add Category
         </button>
     </div>
 </div>
 
-<!-- Контейнер для модальных окон -->
+<!-- Modal Container -->
 <div id="modal-container" class="modal-overlay">
     <div class="modal">
         <h3 id="modal-title" class="modal-title"></h3>
         <input type="text" id="modal-input" class="modal-input" style="display: none;">
         <p id="modal-text" style="margin-bottom: 20px; color: var(--text-muted); display: none;"></p>
         <div class="modal-actions">
-            <button id="modal-cancel-btn" class="modal-btn secondary">Отмена</button>
-            <button id="modal-confirm-btn" class="modal-btn primary">ОК</button>
+            <button id="modal-cancel-btn" class="modal-btn secondary">Cancel</button>
+            <button id="modal-confirm-btn" class="modal-btn primary">OK</button>
         </div>
     </div>
 </div>
 
-<!-- Скрипты приложения -->
+<!-- App Scripts -->
 
 <script src="static/js/storage-manager.js"></script>
 <script src="static/js/state.js"></script>

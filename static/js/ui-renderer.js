@@ -21,46 +21,224 @@
 // FUNC [8][Отрисовка списка профилей] => renderProfileSelector
 // END_MODULE_MAP
 
-// START_FUNCTION_renderProfileSelector
-// START_CONTRACT:
-// PURPOSE: Заполняет выпадающий список профилей и навешивает обработчики на кнопки управления.
-// INPUTS: None
-// OUTPUTS: None
-// SIDE_EFFECTS: Обновляет #profile-select, навешивает слушатели на кнопки ➕ и ✏️.
-// END_CONTRACT
+// START_BLOCK_PALETTE: [Список предустановленных "мягких" цветов]
+const COLOR_PALETTE = [
+    '#818cf8', '#6366f1', '#4f46e5', '#34d399', 
+    '#10b981', '#059669', '#f472b6', '#db2777', 
+    '#fbbf24', '#f59e0b', '#fb7185', '#e11d48',
+    '#60a5fa', '#3b82f6', '#2dd4bf', '#0d9488'
+];
+// END_BLOCK_PALETTE
+
+// START_FUNCTION_showModal
+/**
+ * START_CONTRACT:
+ * PURPOSE: Отображает кастомное модальное окно (замена prompt/confirm).
+ * INPUTS: 
+ * - string => title: Заголовок
+ * - string => type: 'prompt' | 'confirm'
+ * - string => defaultValue: Значение по умолчанию для prompt
+ * OUTPUTS: 
+ * - Promise<string | boolean | null>
+ * END_CONTRACT
+ */
+function showModal(title, type = 'prompt', defaultValue = '', text = '') {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('modal-container');
+        const titleEl = document.getElementById('modal-title');
+        const inputEl = document.getElementById('modal-input');
+        const textEl = document.getElementById('modal-text');
+        const confirmBtn = document.getElementById('modal-confirm-btn');
+        const cancelBtn = document.getElementById('modal-cancel-btn');
+
+        titleEl.textContent = title;
+        textEl.textContent = text;
+        textEl.style.display = text ? 'block' : 'none';
+        
+        if (type === 'prompt') {
+            inputEl.style.display = 'block';
+            inputEl.value = defaultValue;
+            setTimeout(() => inputEl.focus(), 10);
+            
+            inputEl.onkeydown = (e) => {
+                if (e.key === 'Enter') confirmBtn.click();
+                if (e.key === 'Escape') cancelBtn.click();
+            };
+        } else {
+            inputEl.style.display = 'none';
+        }
+
+        overlay.classList.add('active');
+
+        const cleanup = () => {
+            overlay.classList.remove('active');
+            confirmBtn.onclick = null;
+            cancelBtn.onclick = null;
+        };
+
+        confirmBtn.onclick = () => {
+            const val = type === 'prompt' ? inputEl.value : true;
+            cleanup();
+            resolve(val);
+        };
+        cancelBtn.onclick = () => {
+            cleanup();
+            resolve(null);
+        };
+    });
+}
+// END_FUNCTION_showModal
+
+// START_FUNCTION_getRandomColor
+/**
+ * START_CONTRACT:
+ * PURPOSE: Возвращает случайный цвет из палитры.
+ * END_CONTRACT
+ */
+function getRandomColor() {
+    return COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)];
+}
+// END_FUNCTION_getRandomColor
+
+// START_FUNCTION_createCustomNumberInput
+/**
+ * START_CONTRACT:
+ * PURPOSE: Создает обертку для числового ввода с кнопками +/-.
+ * INPUTS: 
+ * - HTMLInputElement => input: Оригинальный инпут
+ * - function => onUpdate: Коллбек при изменении
+ * END_CONTRACT
+ */
+function setupCustomNumberInput(input, onUpdate) {
+    const container = input.closest('.custom-number-input');
+    if (!container) return;
+
+    const minusBtn = container.querySelector('.minus-btn');
+    const plusBtn = container.querySelector('.plus-btn');
+
+    const stepAttr = input.getAttribute('step');
+    const step = stepAttr ? Number(stepAttr) : 1000;
+
+    minusBtn.onclick = (e) => {
+        e.preventDefault();
+        input.value = Math.max(0, Number(input.value) - step);
+        onUpdate();
+    };
+    plusBtn.onclick = (e) => {
+        e.preventDefault();
+        input.value = Number(input.value) + step;
+        onUpdate();
+    };
+}
+// END_FUNCTION_createCustomNumberInput
+
+// START_FUNCTION_createColorPicker
+/**
+ * START_CONTRACT:
+ * PURPOSE: Создает кастомный выбор цвета.
+ * INPUTS: 
+ * - string => initialColor: Начальный цвет
+ * - function => onChange: Коллбек при выборе
+ * END_CONTRACT
+ */
+function createColorPicker(initialColor, onChange) {
+    const container = document.createElement('div');
+    container.className = 'color-picker-container';
+    
+    container.innerHTML = `
+        <div class="color-badge" style="background-color: ${initialColor}"></div>
+        <div class="color-palette">
+            ${COLOR_PALETTE.map(c => `<div class="palette-color" style="background-color: ${c}" data-color="${c}"></div>`).join('')}
+        </div>
+    `;
+
+    const badge = container.querySelector('.color-badge');
+    const palette = container.querySelector('.color-palette');
+
+    badge.onclick = (e) => {
+        e.stopPropagation();
+        palette.classList.toggle('active');
+        
+        const closePalette = () => {
+            palette.classList.remove('active');
+            document.removeEventListener('click', closePalette);
+        };
+        document.addEventListener('click', closePalette);
+    };
+
+    container.querySelectorAll('.palette-color').forEach(el => {
+        el.onclick = () => {
+            const color = el.dataset.color;
+            badge.style.backgroundColor = color;
+            onChange(color);
+        };
+    });
+
+    return container;
+}
+// END_FUNCTION_createColorPicker
+
+/**
+ * START_CONTRACT:
+ * PURPOSE: Отрисовывает кастомное меню управления профилями.
+ * INPUTS: None
+ * OUTPUTS: None
+ * SIDE_EFFECTS: Обновляет #profile-manager-root.
+ * END_CONTRACT
+ */
 function renderProfileSelector() {
-    const select = document.getElementById('profile-select');
-    const addBtn = document.getElementById('add-profile-btn');
-    const renameBtn = document.getElementById('rename-profile-btn');
-    const deleteBtn = document.getElementById('delete-profile-btn');
+    console.log("[UI][IMP:7][renderProfileSelector] Отрисовка селектора профилей");
+    const root = document.getElementById('profile-manager-root');
+    if (!root) {
+        console.error("[UI][IMP:10][renderProfileSelector] Не найден #profile-manager-root");
+        return;
+    }
+
+    const currentProf = window.profiles.find(p => p.id === window.currentProfileId);
+    
+    // START_BLOCK_RENDER: [Генерация HTML]
+    root.innerHTML = `
+        <div class="profile-manager-menu">
+            <select id="profile-select" class="profile-select" title="Выберите профиль">
+                ${window.profiles.map(p => `<option value="${p.id}" ${p.id === window.currentProfileId ? 'selected' : ''}>${p.name}</option>`).join('')}
+            </select>
+            <button class="profile-dots-btn" title="Управление профилем">⋮</button>
+            <div class="profile-actions-dropdown">
+                <div class="profile-action-item" id="prof-add"><span>➕</span> Создать новый</div>
+                <div class="profile-action-item" id="prof-rename"><span>✏️</span> Переименовать</div>
+                <div class="profile-action-item danger" id="prof-delete"><span>🗑️</span> Удалить текущий</div>
+            </div>
+        </div>
+    `;
+    // END_BLOCK_RENDER
+
+    // START_BLOCK_EVENTS: [Настройка событий]
+    const select = root.querySelector('#profile-select');
+    const dotsBtn = root.querySelector('.profile-dots-btn');
+    const dropdown = root.querySelector('.profile-actions-dropdown');
+
     if (!select) return;
 
-    // START_BLOCK_FILL_SELECT: [Заполнение опций]
-    select.innerHTML = '';
-    window.profiles.forEach(profile => {
-        const option = document.createElement('option');
-        option.value = profile.id;
-        option.textContent = profile.name;
-        option.selected = profile.id === window.currentProfileId;
-        select.appendChild(option);
-    });
-    // END_BLOCK_FILL_SELECT
-
-    // START_BLOCK_EVENT_HANDLERS: [Обработчики управления профилями]
     select.onchange = (e) => window.switchProfile(e.target.value);
-    
-    addBtn.onclick = () => {
-        const name = prompt('Введите название нового профиля:', `План ${window.profiles.length + 1}`);
+
+    dotsBtn.onclick = (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('active');
+        const close = () => { dropdown.classList.remove('active'); document.removeEventListener('click', close); };
+        document.addEventListener('click', close);
+    };
+
+    root.querySelector('#prof-add').onclick = async () => {
+        const name = await showModal('Новый профиль', 'prompt', `План ${window.profiles.length + 1}`);
         if (name) {
             const newProf = window.createProfile(name);
             window.switchProfile(newProf.id);
         }
     };
 
-    renameBtn.onclick = () => {
-        const currentProf = window.profiles.find(p => p.id === window.currentProfileId);
+    root.querySelector('#prof-rename').onclick = async () => {
         if (!currentProf) return;
-        const newName = prompt('Переименовать профиль:', currentProf.name);
+        const newName = await showModal('Переименовать профиль', 'prompt', currentProf.name);
         if (newName && newName !== currentProf.name) {
             currentProf.name = newName;
             window.StorageManager.saveProfiles(window.profiles);
@@ -68,18 +246,19 @@ function renderProfileSelector() {
         }
     };
 
-    deleteBtn.onclick = () => {
+    root.querySelector('#prof-delete').onclick = async () => {
         if (window.profiles.length <= 1) {
             alert('Нельзя удалить единственный профиль!');
             return;
         }
-        if (confirm(`Вы действительно хотите удалить профиль "${window.profiles.find(p => p.id === window.currentProfileId).name}"?`)) {
+        const confirmed = await showModal('Удаление', 'confirm', '', `Удалить профиль "${currentProf.name}"?`);
+        if (confirmed) {
             window.profiles = window.profiles.filter(p => p.id !== window.currentProfileId);
             window.StorageManager.saveProfiles(window.profiles);
             window.switchProfile(window.profiles[0].id);
         }
     };
-    // END_BLOCK_EVENT_HANDLERS
+    // END_BLOCK_EVENTS
 }
 // END_FUNCTION_renderProfileSelector
 
@@ -99,21 +278,39 @@ function createCategoryElement(cat) {
     div.className = 'category-item';
     div.innerHTML = `
         <div class="cat-top">
-            <input type="color" class="cat-color" value="${cat.color}">
+            <div class="cat-color-wrapper"></div>
             <input type="text" class="cat-name" value="${cat.name}" placeholder="Название">
-            <input type="number" class="cat-amount" value="${cat.amount}" min="0">
+            <div class="custom-number-input">
+                <button class="num-btn minus-btn">−</button>
+                <input type="number" class="cat-amount" value="${cat.amount}" min="0" step="1000">
+                <button class="num-btn plus-btn">+</button>
+            </div>
             <button class="cat-delete" title="Удалить">✕</button>
         </div>
         <input type="range" class="cat-slider" value="${cat.amount}" min="0" max="${window.totalAmount}">
     `;
 
     // START_BLOCK_ELEMENT_REFS: [Получение ссылок на дочерние элементы]
-    const colorIn = div.querySelector('.cat-color');
+    const colorWrapper = div.querySelector('.cat-color-wrapper');
     const nameIn = div.querySelector('.cat-name');
     const amountIn = div.querySelector('.cat-amount');
     const sliderIn = div.querySelector('.cat-slider');
     const deleteBtn = div.querySelector('.cat-delete');
     // END_BLOCK_ELEMENT_REFS
+
+    // START_BLOCK_CUSTOM_COMPONENTS: [Инициализация кастомных компонентов]
+    const picker = createColorPicker(cat.color, (newColor) => {
+        cat.color = newColor;
+        window.updateApp();
+    });
+    colorWrapper.appendChild(picker);
+
+    setupCustomNumberInput(amountIn, () => {
+        cat.amount = Number(amountIn.value);
+        sliderIn.value = cat.amount;
+        window.updateApp();
+    });
+    // END_BLOCK_CUSTOM_COMPONENTS
 
     // START_BLOCK_EVENT_HANDLERS: [Настройка обработчиков событий]
     const handleEnterKey = (e) => {
@@ -126,7 +323,6 @@ function createCategoryElement(cat) {
     nameIn.addEventListener('keydown', handleEnterKey);
     amountIn.addEventListener('keydown', handleEnterKey);
 
-    colorIn.addEventListener('input', (e) => { cat.color = e.target.value; window.updateApp(); });
     nameIn.addEventListener('input', (e) => { cat.name = e.target.value; window.updateApp(); });
     
     amountIn.addEventListener('input', (e) => {
@@ -197,3 +393,6 @@ function generateLegend(data) {
 window.createCategoryElement = createCategoryElement;
 window.generateLegend = generateLegend;
 window.renderProfileSelector = renderProfileSelector;
+window.getRandomColor = getRandomColor;
+window.setupCustomNumberInput = setupCustomNumberInput;
+window.COLOR_PALETTE = COLOR_PALETTE;

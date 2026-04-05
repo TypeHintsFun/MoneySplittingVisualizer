@@ -31,16 +31,14 @@ window.myChart = null;
 // START_FUNCTION_getRandomColor
 /**
  * START_CONTRACT:
- * PURPOSE: Выбирает случайный цвет из предопределенного набора для новых категорий.
- * INPUTS: None
- * OUTPUTS: 
- * - string - Hex код цвета
- * SIDE_EFFECTS: None
+ * PURPOSE: Заглушка. Актуальная реализация перенесена в ui-renderer.js для единообразия палитры.
  * END_CONTRACT
  */
 function getRandomColor() {
-    const colors = ['#f87171', '#fb923c', '#fbbf24', '#a3e635', '#4ade80', '#34d399', '#2dd4bf', '#38bdf8', '#818cf8', '#a78bfa', '#e879f9', '#f472b6'];
-    return colors[Math.floor(Math.random() * colors.length)];
+    if (window.COLOR_PALETTE) {
+        return window.COLOR_PALETTE[Math.floor(Math.random() * window.COLOR_PALETTE.length)];
+    }
+    return '#818cf8';
 }
 // END_FUNCTION_getRandomColor
 

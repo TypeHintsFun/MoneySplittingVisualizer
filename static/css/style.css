@@ -220,8 +220,8 @@ body {
     letter-spacing: 1.5px;
 }
 .total-box input {
-    display: block;
-    width: 100%;
+    display: inline-block;
+    width: auto;
     text-align: center;
     font-size: 48px;
     font-weight: 700;
@@ -229,7 +229,6 @@ body {
     background: transparent;
     outline: none;
     color: var(--primary);
-    margin-top: 8px;
     padding: 0;
     font-family: inherit;
 }
@@ -315,13 +314,16 @@ body {
     border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .cat-top {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     align-items: center;
     margin-bottom: 16px;
+    flex-wrap: nowrap;
 }
 
 .cat-color { width: 36px; height: 36px; border: none; border-radius: 50%; cursor: pointer; padding: 0; background: transparent; flex-shrink: 0; }
@@ -329,16 +331,17 @@ body {
 .cat-color::-webkit-color-swatch-wrapper { padding: 0; }
 .cat-color::-moz-color-swatch { border: none; border-radius: 50%; }
 
-.cat-name { flex: 1; border: none; background: transparent; color: var(--text-main); font-size: 16px; font-weight: 600; outline: none; font-family: inherit; }
+.cat-name { flex: 1; border: none; background: transparent; color: var(--text-main); font-size: 15px; font-weight: 600; outline: none; font-family: inherit; min-width: 100px; }
 .cat-amount {
-    width: 120px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main);
-    border-radius: 8px; padding: 10px; font-size: 15px; font-weight: 600; outline: none; text-align: center; font-family: inherit;
+    width: 90px; border: none; background: transparent; color: var(--text-main);
+    border-radius: 4px; padding: 6px; font-size: 15px; font-weight: 600; outline: none; text-align: center; font-family: inherit;
+    min-width: 70px;
 }
-.cat-amount:focus { border-color: var(--border-focus); }
+.cat-amount:focus { border-color: var(--border-focus); background: var(--bg-card); }
 
 .cat-delete {
     background: var(--danger-bg); color: var(--danger-text); border: none; border-radius: 8px;
-    width: 40px; height: 40px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 36px; height: 36px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .cat-delete:hover { filter: brightness(0.95); }
 
@@ -352,6 +355,195 @@ body {
 
 .add-btn { background: transparent; color: var(--primary); border: 2px dashed var(--border-focus); border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; }
 .add-btn:hover { background: var(--bg-panel-left); }
+
+/* === МОДАЛЬНОЕ ОКНО === */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+    background: var(--bg-card);
+    padding: 30px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+.modal-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-input);
+    color: var(--text-main);
+    margin-bottom: 20px;
+    font-family: inherit;
+}
+.modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
+.modal-btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+}
+.modal-btn.primary { background: var(--primary); color: white; }
+.modal-btn.secondary { background: var(--bg-panel-left); color: var(--text-main); }
+
+/* === КАСТОМНЫЙ NUMBER INPUT === */
+.custom-number-input {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 4px;
+    flex-wrap: nowrap;
+}
+.total-box .custom-number-input {
+    border: none;
+    background: transparent;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 10px;
+}
+.num-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: var(--bg-panel-left);
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+.num-btn:hover { background: var(--primary); color: white; }
+.total-box .num-btn {
+    width: 54px;
+    height: 54px;
+    font-size: 28px;
+    border-radius: 16px;
+    background: var(--bg-card);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+.total-box input {
+    width: auto !important;
+    min-width: 200px;
+}
+
+/* === КАСТОМНЫЙ ЦВЕТОВОЙ ПИКЕР === */
+.color-picker-container { position: relative; }
+.color-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--bg-card);
+    box-shadow: 0 0 0 1px var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.color-palette {
+    position: absolute;
+    top: 44px;
+    left: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    z-index: 10;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: none;
+}
+.color-palette.active { display: grid; }
+.palette-color {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+.palette-color:hover { transform: scale(1.1); }
+
+/* === ПРОФИЛЬ CRUD МЕНЮ === */
+.profile-manager-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.profile-dots-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+.profile-actions-dropdown {
+    position: absolute;
+    top: 44px;
+    left: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 8px;
+    width: 180px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: none;
+    z-index: 10;
+}
+.profile-actions-dropdown.active { display: block; }
+.profile-action-item {
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+.profile-action-item:hover { background: var(--bg-panel-left); }
+.profile-action-item.danger { color: var(--danger-text); }
+.profile-action-item.danger:hover { background: var(--danger-bg); }
 
 /* === АДАПТИВНОСТЬ ДЛЯ МОБИЛОК === */
 @media (max-width: 768px) {
@@ -371,9 +563,14 @@ body {
     .right-panel { padding: 30px 20px; min-width: 100%; }
 }
 
+@media (max-width: 600px) {
+    .cat-top { flex-wrap: wrap; gap: 8px; }
+    .cat-name { width: 100%; flex: none; font-size: 16px; min-width: unset; }
+    .custom-number-input { flex: 1; min-width: 150px; }
+    .cat-amount { flex: 1; width: auto; margin-right: 4px; min-width: unset; }
+    .cat-delete { margin-left: auto; }
+}
+
 @media (max-width: 480px) {
-    .cat-top { flex-wrap: wrap; gap: 12px; }
-    .cat-name { width: 100%; flex: none; font-size: 18px; }
-    .cat-amount { flex: 1; width: auto; margin-right: 8px; }
     .total-box input { font-size: 40px; }
 }

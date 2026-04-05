@@ -19,11 +19,8 @@
 <body>
 
 <div class="header-controls">
-    <div class="profile-manager">
-        <select id="profile-select" class="profile-select" title="Выберите профиль"></select>
-        <button id="add-profile-btn" class="icon-btn" title="Создать новый профиль">➕</button>
-        <button id="rename-profile-btn" class="icon-btn" title="Переименовать профиль">✏️</button>
-        <button id="delete-profile-btn" class="icon-btn danger-btn" title="Удалить текущий профиль">🗑️</button>
+    <div class="profile-manager" id="profile-manager-root">
+        <!-- Будет отрисовано через JS -->
     </div>
     <div class="action-buttons">
         <button class="theme-toggle" id="theme-toggle" title="Переключить тему">🌙</button>
@@ -43,7 +40,11 @@
 
         <div class="total-box">
             <label>Общая сумма (₽)</label>
-            <input type="number" id="total-input" value="100000" min="0">
+            <div class="custom-number-input">
+                <button class="num-btn minus-btn">−</button>
+                <input type="number" id="total-input" value="100000" min="0" step="10000">
+                <button class="num-btn plus-btn">+</button>
+            </div>
         </div>
         
         <div class="remaining-box" id="remaining-box">Остаток: 0 ₽</div>
@@ -69,7 +70,21 @@
     </div>
 </div>
 
+<!-- Контейнер для модальных окон -->
+<div id="modal-container" class="modal-overlay">
+    <div class="modal">
+        <h3 id="modal-title" class="modal-title"></h3>
+        <input type="text" id="modal-input" class="modal-input" style="display: none;">
+        <p id="modal-text" style="margin-bottom: 20px; color: var(--text-muted); display: none;"></p>
+        <div class="modal-actions">
+            <button id="modal-cancel-btn" class="modal-btn secondary">Отмена</button>
+            <button id="modal-confirm-btn" class="modal-btn primary">ОК</button>
+        </div>
+    </div>
+</div>
+
 <!-- Скрипты приложения -->
+
 <script src="static/js/storage-manager.js"></script>
 <script src="static/js/state.js"></script>
 <script src="static/js/chart-engine.js"></script>

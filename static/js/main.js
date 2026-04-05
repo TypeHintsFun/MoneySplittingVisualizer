@@ -77,6 +77,12 @@ function init() {
 
     if (totalInput) {
         totalInput.addEventListener('input', window.updateApp);
+        
+        // Инициализация кастомных кнопок +/- для общей суммы
+        if (window.setupCustomNumberInput) {
+            window.setupCustomNumberInput(totalInput, window.updateApp);
+        }
+
         totalInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();

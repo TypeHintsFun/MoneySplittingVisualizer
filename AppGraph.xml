@@ -1,0 +1,40 @@
+<AppGraph>
+    <Module name="index.html" type="Structure" path="index.html">
+        <Purpose>Основная точка входа, определяет структуру DOM.</Purpose>
+        <Dependencies>
+            <Dependency>static/css/style.css</Dependency>
+            <Dependency>static/js/main.js</Dependency>
+        </Dependencies>
+    </Module>
+    <Module name="style.css" type="Style" path="static/css/style.css">
+        <Purpose>Стилизация приложения, поддержка темной и светлой тем.</Purpose>
+    </Module>
+    <Module name="state.js" type="Logic" path="static/js/state.js">
+        <Purpose>Управление состоянием приложения и синхронизация с URL (Base64).</Purpose>
+    </Module>
+    <Module name="chart-engine.js" type="Visualization" path="static/js/chart-engine.js">
+        <Purpose>Интеграция с Chart.js, отрисовка диаграмм.</Purpose>
+        <Dependencies>
+            <Dependency>static/js/state.js</Dependency>
+        </Dependencies>
+    </Module>
+    <Module name="ui-renderer.js" type="UI" path="static/js/ui-renderer.js">
+        <Purpose>Отрисовка динамических элементов списка категорий и легенды.</Purpose>
+        <Dependencies>
+            <Dependency>static/js/state.js</Dependency>
+            <Dependency>static/js/chart-engine.js</Dependency>
+        </Dependencies>
+    </Module>
+    <Module name="theme-manager.js" type="UI" path="static/js/theme-manager.js">
+        <Purpose>Переключение тем оформления.</Purpose>
+    </Module>
+    <Module name="main.js" type="Logic" path="static/js/main.js">
+        <Purpose>Точка входа JS, инициализация приложения.</Purpose>
+        <Dependencies>
+            <Dependency>static/js/state.js</Dependency>
+            <Dependency>static/js/chart-engine.js</Dependency>
+            <Dependency>static/js/ui-renderer.js</Dependency>
+            <Dependency>static/js/theme-manager.js</Dependency>
+        </Dependencies>
+    </Module>
+</AppGraph>

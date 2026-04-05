@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Распределение бюджета</title>
+    <!-- Шрифт Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* СВЕТЛАЯ ТЕМА */
+        :root {
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-panel-left: #f8fafc;
+            --bg-input: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --border-color: #e2e8f0;
+            --border-focus: #a5b4fc;
+            --danger-bg: #fee2e2;
+            --danger-text: #ef4444;
+            --success-bg: #d1fae5;
+            --success-text: #10b981;
+            --unallocated-bg: #e2e8f0;
+        }
+
+        /* ТЁМНАЯ ТЕМА */
+        [data-theme="dark"] {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-panel-left: #0f172a;
+            --bg-input: #0f172a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #818cf8;
+            --primary-hover: #6366f1;
+            --border-color: #334155;
+            --border-focus: #6366f1;
+            --danger-bg: #450a0a;
+            --danger-text: #f87171;
+            --success-bg: #064e3b;
+            --success-text: #34d399;
+            --unallocated-bg: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+        .theme-toggle:hover { transform: scale(1.05); }
+
+        .copy-link-btn {
+            position: absolute;
+            top: 20px;
+            right: 75px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 16px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            z-index: 10;
+            transition: all 0.2s;
+        }
+        .copy-link-btn:hover { transform: scale(1.02); background: var(--bg-panel-left); }
+        .copy-link-btn.copied { background: var(--success-bg); color: var(--success-text); border-color: var(--success-text); }
+
+        .app-container {
+            position: relative;
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 1050px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-wrap: wrap;
+            overflow: hidden;
+        }
+
+        /* === ЛЕВАЯ ПАНЕЛЬ === */
+        .left-panel {
+            flex: 1;
+            min-width: 320px;
+            padding: 40px;
+            background: var(--bg-panel-left);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chart-type-select {
+            margin-bottom: 24px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            width: 100%;
+            max-width: 270px;
+            text-align: center;
+        }
+        .chart-type-select:focus { border-color: var(--primary); }
+
+        .total-box {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .total-box label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .total-box input {
+            display: block;
+            width: 100%;
+            text-align: center;
+            font-size: 48px;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            outline: none;
+            color: var(--primary);
+            margin-top: 8px;
+            padding: 0;
+            font-family: inherit;
+        }
+
+        .remaining-box {
+            font-size: 15px;
+            font-weight: 600;
+            padding: 8px 24px;
+            border-radius: 20px;
+            background: var(--success-bg);
+            color: var(--success-text);
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .chart-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            transition: height 0.3s, max-width 0.3s;
+        }
+
+        .chart-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-center-val {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+        .chart-center-label { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        .custom-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px 20px;
+            margin-top: 30px;
+            width: 100%;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .legend-color { width: 24px; height: 10px; border-radius: 4px; }
+
+        /* === ПРАВАЯ ПАНЕЛЬ === */
+        .right-panel {
+            flex: 1.6;
+            min-width: 380px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-title { font-size: 22px; font-weight: 700; margin-bottom: 24px; color: var(--text-main); }
+        .categories-list { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+
+        .category-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .cat-top {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .cat-color { width: 36px; height: 36px; border: none; border-radius: 50%; cursor: pointer; padding: 0; background: transparent; flex-shrink: 0; }
+        .cat-color::-webkit-color-swatch { border: none; border-radius: 50%; }
+        .cat-color::-webkit-color-swatch-wrapper { padding: 0; }
+        .cat-color::-moz-color-swatch { border: none; border-radius: 50%; }
+
+        .cat-name { flex: 1; border: none; background: transparent; color: var(--text-main); font-size: 16px; font-weight: 600; outline: none; font-family: inherit; }
+        .cat-amount {
+            width: 120px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main);
+            border-radius: 8px; padding: 10px; font-size: 15px; font-weight: 600; outline: none; text-align: center; font-family: inherit;
+        }
+        .cat-amount:focus { border-color: var(--border-focus); }
+
+        .cat-delete {
+            background: var(--danger-bg); color: var(--danger-text); border: none; border-radius: 8px;
+            width: 40px; height: 40px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .cat-delete:hover { filter: brightness(0.95); }
+
+        .cat-slider { width: 100%; -webkit-appearance: none; appearance: none; background: transparent; height: 20px; cursor: pointer; margin: 0; }
+        .cat-slider::-webkit-slider-runnable-track { width: 100%; height: 6px; background: var(--border-color); border-radius: 3px; }
+        .cat-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; height: 18px; width: 18px; border-radius: 50%; background: var(--primary); margin-top: -6px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.1s; }
+        .cat-slider::-webkit-slider-thumb:active { transform: scale(1.15); }
+        .cat-slider::-moz-range-track { width: 100%; height: 6px; background: var(--border-color); border-radius: 3px; }
+        .cat-slider::-moz-range-thumb { height: 18px; width: 18px; border-radius: 50%; background: var(--primary); border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2); transition: transform 0.1s; }
+        .cat-slider::-moz-range-thumb:active { transform: scale(1.15); }
+
+        .add-btn { background: transparent; color: var(--primary); border: 2px dashed var(--border-focus); border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; }
+        .add-btn:hover { background: var(--bg-panel-left); }
+
+        /* === АДАПТИВНОСТЬ ДЛЯ МОБИЛОК === */
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            .app-container { flex-direction: column; }
+            .left-panel { border-right: none; border-bottom: 1px solid var(--border-color); padding: 30px 20px; }
+            .right-panel { padding: 30px 20px; min-width: 100%; }
+        }
+
+        @media (max-width: 480px) {
+            .cat-top { flex-wrap: wrap; gap: 12px; }
+            .cat-name { width: 100%; flex: none; font-size: 18px; }
+            .cat-amount { flex: 1; width: auto; margin-right: 8px; }
+            .total-box input { font-size: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+<button class="theme-toggle" id="theme-toggle" title="Переключить тему">🌙</button>
+<button class="copy-link-btn" id="copy-link-btn" title="Скопировать ссылку">
+    <span>🔗</span>
+    <span id="copy-link-text">Скопировать ссылку</span>
+</button>
+
+<div class="app-container">
+    <div class="left-panel">
+        <select id="chart-type-select" class="chart-type-select">
+            <option value="doughnut">🍩 Круговая диаграмма</option>
+            <option value="bar">📊 Один разделенный столбец</option>
+        </select>
+
+        <div class="total-box">
+            <label>Общая сумма (₽)</label>
+            <input type="number" id="total-input" value="100000" min="0">
+        </div>
+        
+        <div class="remaining-box" id="remaining-box">Остаток: 0 ₽</div>
+
+        <div class="chart-container">
+            <div class="chart-wrapper">
+                <canvas id="myChart"></canvas>
+                <div class="chart-center" id="chart-center">
+                    <div class="chart-center-val" id="chart-center-val">100 000 ₽</div>
+                    <div class="chart-center-label">Всего</div>
+                </div>
+            </div>
+            <div id="custom-legend" class="custom-legend"></div>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="panel-title">Распределение по частям</div>
+        <div class="categories-list" id="categories-list"></div>
+        <button class="add-btn" id="add-btn">
+            <span>+</span> Добавить категорию
+        </button>
+    </div>
+</div>
+
+<script>
+    let totalAmount = 100000;
+    let categories = [
+        { id: 1, name: 'Жилье', amount: 30000, color: '#818cf8' },
+        { id: 2, name: 'Питание', amount: 40023, color: '#34d399' },
+        { id: 3, name: 'Сбережения', amount: 15000, color: '#f472b6' }
+    ];
+
+    let myChart;
+    let isAppLoaded = false; 
+
+    const listEl = document.getElementById('categories-list');
+    const totalInput = document.getElementById('total-input');
+    const remBox = document.getElementById('remaining-box');
+    const centerVal = document.getElementById('chart-center-val');
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    const chartTypeSelect = document.getElementById('chart-type-select');
+
+    // === СОХРАНЕНИЕ И ЗАГРУЗКА ИЗ URL ===
+    function saveStateToURL() {
+        const state = {
+            t: Number(totalInput.value),
+            c: chartTypeSelect.value,
+            items: categories.map(cat => ({
+                n: cat.name,
+                a: cat.amount,
+                col: cat.color
+            }))
+        };
+        
+        // Переводим в строку, кодируем спецсимволы (кириллицу) и затем в Base64
+        const jsonStr = JSON.stringify(state);
+        const encoded = btoa(encodeURIComponent(jsonStr));
+        
+        // Используем replaceState, чтобы не засорять историю браузера кнопкой "Назад"
+        window.history.replaceState(null, null, '#' + encoded);
+    }
+
+    function loadStateFromURL() {
+        const hash = window.location.hash.substring(1);
+        if (!hash) return false;
+
+        try {
+            // Декодируем из Base64 и парсим строку
+            const decoded = decodeURIComponent(atob(hash));
+            const state = JSON.parse(decoded);
+
+            if (state.t !== undefined) {
+                totalAmount = state.t;
+                totalInput.value = state.t;
+            }
+            if (state.c) {
+                chartTypeSelect.value = state.c;
+            }
+            if (state.items && Array.isArray(state.items)) {
+                categories = state.items.map((item, index) => ({
+                    id: Date.now() + index, // генерируем новые ID
+                    name: item.n || '',
+                    amount: Number(item.a) || 0,
+                    color: item.col || '#000000'
+                }));
+            }
+            return true;
+        } catch (e) {
+            console.error("Не удалось прочитать данные из URL", e);
+            return false;
+        }
+    }
+    // =====================================
+
+    function toggleTheme() {
+        const root = document.documentElement;
+        const isDark = root.getAttribute('data-theme') === 'dark';
+        root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        themeToggleBtn.textContent = isDark ? '🌙' : '☀️';
+        updateApp(); 
+    }
+    themeToggleBtn.addEventListener('click', toggleTheme);
+
+    // START_BLOCK_COPY_LINK
+    function copyLinkToClipboard() {
+        const copyBtn = document.getElementById('copy-link-btn');
+        const copyText = document.getElementById('copy-link-text');
+        const currentURL = window.location.href;
+        
+        console.log('BLOCK_COPY_LINK | BS: Copy link sequence initiated | URLLength:%s', currentURL.length);
+        
+        navigator.clipboard.writeText(currentURL).then(() => {
+            copyBtn.classList.add('copied');
+            copyText.textContent = 'Скопировано!';
+            console.log('BLOCK_COPY_LINK | BS: Link successfully copied to clipboard | URLLength:%s', currentURL.length);
+            
+            setTimeout(() => {
+                copyBtn.classList.remove('copied');
+                copyText.textContent = 'Скопировать ссылку';
+                console.log('BLOCK_COPY_LINK | BS: Button state reset to default');
+            }, 2000);
+        }).catch(err => {
+            console.error('BLOCK_COPY_LINK | BS: Copy operation failed | Error:%s', err.message);
+            alert('Не удалось скопировать ссылку. Пожалуйста, скопируйте её вручную из адресной строки.');
+        });
+    }
+    // END_BLOCK_COPY_LINK
+
+    const copyLinkBtn = document.getElementById('copy-link-btn');
+    copyLinkBtn.addEventListener('click', copyLinkToClipboard);
+    // =====================================
+
+    totalInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const firstCatName = listEl.querySelector('.cat-name');
+            if (firstCatName) firstCatName.focus();
+        }
+    });
+
+    chartTypeSelect.addEventListener('change', () => {
+        if (myChart) myChart.destroy();
+        isAppLoaded = false; 
+        initChart();
+        updateApp();
+        isAppLoaded = true;
+    });
+
+    function getRandomColor() {
+        const colors = ['#f87171', '#fb923c', '#fbbf24', '#a3e635', '#4ade80', '#34d399', '#2dd4bf', '#38bdf8', '#818cf8', '#a78bfa', '#e879f9', '#f472b6'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function initChart() {
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const chartType = chartTypeSelect.value;
+        const wrapper = document.querySelector('.chart-wrapper');
+        const centerText = document.getElementById('chart-center');
+
+        if (chartType === 'doughnut') {
+            wrapper.style.aspectRatio = '1';
+            wrapper.style.height = 'auto';
+            wrapper.style.maxWidth = '270px';
+            centerText.style.display = 'flex';
+        } else {
+            wrapper.style.aspectRatio = 'auto';
+            wrapper.style.height = '60px'; 
+            wrapper.style.maxWidth = '100%';
+            centerText.style.display = 'none';
+        }
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: 0 },
+            plugins: {
+                legend: { display: false }, 
+                tooltip: {
+                    callbacks: {
+                        label: function(context) { 
+                            const label = chartType === 'doughnut' ? context.label : context.dataset.label;
+                            return ` ${label}: ${context.raw.toLocaleString()} ₽`; 
+                        }
+                    }
+                }
+            }
+        };
+
+        if (chartType === 'doughnut') {
+            options.cutout = '75%';
+            options.hoverOffset = 4;
+        } else {
+            options.indexAxis = 'y'; 
+            options.scales = {
+                x: { stacked: true, display: false, min: 0 },
+                y: { stacked: true, display: false }
+            };
+        }
+
+        myChart = new Chart(ctx, {
+            type: chartType === 'doughnut' ? 'doughnut' : 'bar',
+            data: getChartData(),
+            options: options
+        });
+    }
+
+    function getChartData() {
+        const sum = categories.reduce((a, b) => a + b.amount, 0);
+        const remaining = Math.max(0, totalAmount - sum);
+        const chartType = chartTypeSelect.value;
+        const unallocatedColor = getComputedStyle(document.documentElement).getPropertyValue('--unallocated-bg').trim();
+
+        if (chartType === 'doughnut') {
+            const labels = categories.map(c => c.name || 'Без названия');
+            const data = categories.map(c => c.amount);
+            const bg = categories.map(c => c.color);
+
+            if (remaining > 0) {
+                labels.push('Не распределено');
+                data.push(remaining);
+                bg.push(unallocatedColor);
+            }
+
+            return {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: bg,
+                    borderWidth: 0 
+                }]
+            };
+        } else {
+            const datasets = categories.map(c => ({
+                label: c.name || 'Без названия',
+                data: [c.amount],
+                backgroundColor: c.color,
+                borderWidth: 0, 
+                barPercentage: 1,
+                categoryPercentage: 1
+            }));
+
+            if (remaining > 0) {
+                datasets.push({
+                    label: 'Не распределено',
+                    data: [remaining],
+                    backgroundColor: unallocatedColor,
+                    borderWidth: 0,
+                    barPercentage: 1,
+                    categoryPercentage: 1
+                });
+            }
+
+            return {
+                labels: [''], 
+                datasets: datasets
+            };
+        }
+    }
+
+    function generateLegend(data) {
+        const legendEl = document.getElementById('custom-legend');
+        legendEl.innerHTML = '';
+        const chartType = chartTypeSelect.value;
+
+        if (chartType === 'doughnut') {
+            data.labels.forEach((label, i) => {
+                const color = data.datasets[0].backgroundColor[i];
+                const div = document.createElement('div');
+                div.className = 'legend-item';
+                div.innerHTML = `<span class="legend-color" style="background-color: ${color}"></span><span>${label}</span>`;
+                legendEl.appendChild(div);
+            });
+        } else {
+            data.datasets.forEach((dataset) => {
+                const label = dataset.label;
+                const color = dataset.backgroundColor;
+                const div = document.createElement('div');
+                div.className = 'legend-item';
+                div.innerHTML = `<span class="legend-color" style="background-color: ${color}"></span><span>${label}</span>`;
+                legendEl.appendChild(div);
+            });
+        }
+    }
+
+    function updateApp() {
+        totalAmount = Number(totalInput.value) || 0;
+        const sum = categories.reduce((a, b) => a + b.amount, 0);
+        const remaining = totalAmount - sum;
+
+        remBox.textContent = `Остаток: ${remaining.toLocaleString()} ₽`;
+        if (remaining < 0) {
+            remBox.style.background = 'var(--danger-bg)';
+            remBox.style.color = 'var(--danger-text)';
+        } else {
+            remBox.style.background = 'var(--success-bg)';
+            remBox.style.color = 'var(--success-text)';
+        }
+
+        centerVal.textContent = totalAmount.toLocaleString() + ' ₽';
+
+        document.querySelectorAll('.cat-slider').forEach(slider => {
+            slider.max = totalAmount;
+        });
+
+        const newData = getChartData();
+        
+        myChart.data = newData;
+
+        if (chartTypeSelect.value === 'bar') {
+            myChart.options.scales.x.max = Math.max(totalAmount, sum);
+        }
+        
+        if (isAppLoaded) {
+            myChart.update('none'); 
+        } else {
+            myChart.update(); 
+        }
+        
+        generateLegend(newData);
+
+        // Сохраняем состояние в URL при любом обновлении
+        if (isAppLoaded) {
+            saveStateToURL();
+        }
+    }
+
+    function createCategoryElement(cat) {
+        const div = document.createElement('div');
+        div.className = 'category-item';
+        div.innerHTML = `
+            <div class="cat-top">
+                <input type="color" class="cat-color" value="${cat.color}">
+                <input type="text" class="cat-name" value="${cat.name}" placeholder="Название">
+                <input type="number" class="cat-amount" value="${cat.amount}" min="0">
+                <button class="cat-delete" title="Удалить">✕</button>
+            </div>
+            <input type="range" class="cat-slider" value="${cat.amount}" min="0" max="${totalAmount}">
+        `;
+
+        const colorIn = div.querySelector('.cat-color');
+        const nameIn = div.querySelector('.cat-name');
+        const amountIn = div.querySelector('.cat-amount');
+        const sliderIn = div.querySelector('.cat-slider');
+        const deleteBtn = div.querySelector('.cat-delete');
+
+        const handleEnterKey = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('add-btn').click();
+            }
+        };
+
+        nameIn.addEventListener('keydown', handleEnterKey);
+        amountIn.addEventListener('keydown', handleEnterKey);
+
+        colorIn.addEventListener('input', (e) => { cat.color = e.target.value; updateApp(); });
+        nameIn.addEventListener('input', (e) => { cat.name = e.target.value; updateApp(); });
+        
+        amountIn.addEventListener('input', (e) => {
+            let val = Math.max(0, Number(e.target.value));
+            cat.amount = val;
+            sliderIn.value = val;
+            updateApp();
+        });
+
+        sliderIn.addEventListener('input', (e) => {
+            let val = Number(e.target.value);
+            cat.amount = val;
+            amountIn.value = val;
+            updateApp();
+        });
+
+        deleteBtn.addEventListener('click', () => {
+            categories = categories.filter(c => c.id !== cat.id);
+            div.remove();
+            updateApp();
+        });
+
+        return div;
+    }
+
+    function init() {
+        // Пробуем загрузить данные из URL перед отрисовкой
+        loadStateFromURL();
+
+        categories.forEach(cat => listEl.appendChild(createCategoryElement(cat)));
+        initChart();
+        updateApp();
+        isAppLoaded = true;
+        
+        // Однократное первоначальное сохранение (если ссылка была пустой)
+        saveStateToURL();
+        
+        totalInput.addEventListener('input', updateApp);
+
+        document.getElementById('add-btn').addEventListener('click', () => {
+            const newCat = { id: Date.now(), name: '', amount: 0, color: getRandomColor() };
+            categories.push(newCat);
+            const newElement = createCategoryElement(newCat);
+            listEl.appendChild(newElement);
+            updateApp();
+            
+            newElement.scrollIntoView({ behavior: 'smooth' });
+            newElement.querySelector('.cat-name').focus();
+        });
+    }
+
+    init();
+</script>
+</body>
+</html>
